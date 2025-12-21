@@ -9,7 +9,7 @@ This fork also includes a bug fix that resolves the inability to assign a Slings
 You must remove any previous versions of Star Control or Radial Menu before installing this mod.
 
 ![Full overlay screenshot](docs/images/screenshot-controller-overlay.png)
-Screenshot from 1200 x 800 resolution display (Steam Deck native resolution)
+Screenshot from 1280 x 800 resolution display (Steam Deck native resolution)
 
 ## Upcoming changes
 
