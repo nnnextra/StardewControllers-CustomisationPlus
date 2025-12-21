@@ -17,6 +17,7 @@ Implement config to allow changes to:
 - Position of radial menus on screen 
 - Full-screen background fade behind raidal menus
 - Highlighted item name and description font size
+- Size of quick action menus
 
 
 ---
