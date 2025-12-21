@@ -4,7 +4,7 @@ This is a fork of focustense/StardewControllers with UI scaling adjustments to m
 
 This fork also includes a bug fix that resolves the inability to assign a Slingshot to a quick action button (and also works for bows from Swords & Sorcery).
 
-![Full overlay screenshot](docs/images/Screenshot 2025-12-21 at 14.50.41.png)
+![Full overlay screenshot](docs/images/screenshot-controller-overlay.png)
 
 ---
 Original README below:
