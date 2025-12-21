@@ -2,7 +2,7 @@
 
 *WORK IN PROGRESS*
 
-This is a fork of focustense/StardewControllers with UI scaling adjustments to make the radial menus smaller and less intrusive, particularly on smaller screens such as the Steam Deck. On larger screens, the menus retain a more minimal appearance.
+This is a fork of focustense/StardewControllers with UI scaling and position adjustments to make the radial menus smaller and less intrusive, particularly on smaller screens such as the Steam Deck. On larger screens, the menus retain a more minimal appearance.
 
 This fork also includes a bug fix that resolves the inability to assign a Slingshot to a quick action button (and also works for bows from Swords & Sorcery).
 
