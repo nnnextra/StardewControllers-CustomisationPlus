@@ -1,4 +1,4 @@
-# Star Control - Smaller Screens / More Minimal
+# Star Control for Stardew Valley - Smaller Screens / More Minimal
 
 This is a fork of focustense/StardewControllers with UI scaling adjustments to make the radial menus smaller and less intrusive, particularly on smaller screens such as the Steam Deck. On larger screens, the menus retain a more minimal appearance.
 
