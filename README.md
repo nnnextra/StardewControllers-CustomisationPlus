@@ -6,6 +6,8 @@ This is a fork of focustense/StardewControllers with UI scaling adjustments to m
 
 This fork also includes a bug fix that resolves the inability to assign a Slingshot to a quick action button (and also works for bows from Swords & Sorcery).
 
+You must remove any previous versions of Star Control or Radial Menu before installing this mod.
+
 ![Full overlay screenshot](docs/images/screenshot-controller-overlay.png)
 
 ---
