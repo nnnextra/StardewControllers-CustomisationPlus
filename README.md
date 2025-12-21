@@ -1,6 +1,10 @@
 # Star Control - Smaller Screens / More Minimal
 
-(aka: "Better Gamepads")
+This is a fork of This is a fork of focustense/StardewControllers with UI scaling adjustments to make the radial menus smaller, so they fit better on smaller screens such as the SteamDeck. On larger screens the radial menus are also smaller for a more minimal appearance for the radial menus. This fork also includes a bug fix that resolves the inability to assign a Slingshot to a quick action button (also works for Bows from Swords & Sorcery). 
+
+---
+
+Original README below:
 
 ![Full overlay screenshot](docs/images/screenshot-controller-overlay.png)
 
