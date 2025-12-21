@@ -18,6 +18,7 @@ Implement config to allow changes to:
 - Full-screen background fade behind raidal menus
 - Highlighted item name and description font size
 - Size of quick action menus
+- Size of in-game Star Control config menu to fit better on smaller screens
 
 
 ---
