@@ -11,6 +11,14 @@ You must remove any previous versions of Star Control or Radial Menu before inst
 ![Full overlay screenshot](docs/images/screenshot-controller-overlay.png)
 Screenshot from 1200 x 800 resolution display (Steam Deck native resolution)
 
+## Upcoming changes
+
+Implement config to allow changes to:
+- Position of radial menus on screen 
+- Full-screen background fade behind raidal menus
+- Highlighted item name and description font size
+
+
 ---
 Original README below:
 
