@@ -1,4 +1,4 @@
-# Star Control
+# Star Control - Smaller Screens / More Minimal
 
 (aka: "Better Gamepads")
 
