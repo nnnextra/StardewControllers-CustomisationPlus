@@ -11,13 +11,18 @@ internal class QuickSlotResolver(Farmer player, ModMenu modMenu)
         {
             Logger.Log(
                 LogCategory.QuickSlots,
-                $"'{id}' does not have valid item data; aborting search."
+                $"'{id}' does not have validx item data; aborting search."
             );
             return null;
         }
         // Melee weapons don't have upgrades or base items, but if we didn't find an exact match, it
         // is often helpful to find any other melee weapon that's available.
-        if (data.ItemType.Identifier == "(W)")
+        // Only apply fuzzy matching to melee weapons; slingshots must match exactly
+        if (
+            data.ItemType.Identifier == "(W)"
+            && !data.QualifiedItemId.Contains("Slingshot")
+            && !data.QualifiedItemId.Contains("Bow")
+        )
         {
             // We'll match scythes to scythes, and non-scythes to non-scythes.
             // Most likely, the player wants Iridium Scythe if the slot says Scythe. The upgraded

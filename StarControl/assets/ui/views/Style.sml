@@ -1,8 +1,8 @@
 <lane *context={:~ConfigurationViewModel.Style} layout="stretch content" orientation="vertical">
     <form-heading title={#Config.Layout.Heading} />
     <form-row title={#Config.Layout.InnerRadius.Title} description={#Config.Layout.InnerRadius.Description}>
-        <slider track-width="300"
-                min="200"
+        <slider track-width="75"
+                min="50"
                 max="400"
                 interval="10"
                 value={<>InnerRadius}

@@ -24,6 +24,7 @@ public class RadialMenuPainter(GraphicsDevice graphicsDevice, Styles styles)
     public IReadOnlyList<IRadialMenuItem?> Items { get; set; } = [];
     public RenderTarget2D? RenderTarget { get; set; }
     public float Scale { get; set; } = 1f;
+    public float VerticalOffset { get; set; } = 0.3f;
 
     private readonly BasicEffect effect = new(graphicsDevice)
     {
@@ -110,7 +111,11 @@ public class RadialMenuPainter(GraphicsDevice graphicsDevice, Styles styles)
 
     private void PaintBackgrounds(Rectangle viewport, float? selectionAngle)
     {
-        effect.World = Matrix.CreateTranslation(viewport.X, viewport.Y, 0);
+        effect.World = Matrix.CreateTranslation(
+            viewport.X,
+            viewport.Y + viewport.Height * VerticalOffset,
+            0
+        );
         effect.Projection = Matrix.CreateOrthographic(viewport.Width, viewport.Height, 0, 1);
         // Cursor is just 1 triangle, so we can compute this on every frame.
         var cursorVertices =
@@ -150,7 +155,7 @@ public class RadialMenuPainter(GraphicsDevice graphicsDevice, Styles styles)
     private void PaintItems(SpriteBatch spriteBatch, Rectangle viewport)
     {
         var centerX = viewport.X + viewport.Width / 2.0f;
-        var centerY = viewport.Y + viewport.Height / 2.0f;
+        var centerY = viewport.Y + viewport.Height / 2.0f + viewport.Height * VerticalOffset;
         var itemRadius = (styles.InnerRadius + styles.GapWidth + styles.OuterRadius / 2.0f) * Scale;
         var angleBetweenItems = TWO_PI / Items.Count;
         var currentAngle = 0.0f;
@@ -210,12 +215,13 @@ public class RadialMenuPainter(GraphicsDevice graphicsDevice, Styles styles)
         }
 
         var centerX = viewport.X + viewport.Width / 2.0f;
-        var centerY = viewport.Y + viewport.Height / 2.0f;
+        var centerY = viewport.Y + viewport.Height / 2.0f + viewport.Height * VerticalOffset;
         var opacity = item.Enabled ? 1 : 0.5f;
         if (item.Texture is not null)
         {
-            var itemDrawSize = GetScaledSize(item, styles.SelectionSpriteHeight * Scale);
-            var itemPos = new Vector2(centerX - itemDrawSize.X / 2, centerY - itemDrawSize.Y - 24);
+            // Make icon 50% larger (height * 1.5)
+            var itemDrawSize = GetScaledSize(item, styles.SelectionSpriteHeight * Scale * 1.5f);
+            var itemPos = new Vector2(centerX - itemDrawSize.X / 2, centerY - itemDrawSize.Y - 12); // nudge down 12 pixels
             var itemRect = new Rectangle(itemPos.ToPoint(), itemDrawSize);
             var baseColor = item.TintRectangle is null
                 ? (item.TintColor ?? Color.White)
@@ -228,31 +234,59 @@ public class RadialMenuPainter(GraphicsDevice graphicsDevice, Styles styles)
         }
 
         var labelFont = Game1.dialogueFont;
-        var labelSize = labelFont.MeasureString(item.Title) * Scale;
-        var labelPos = new Vector2(centerX - labelSize.X / 2.0f, centerY);
-        spriteBatch.DrawString(
-            labelFont,
-            item.Title,
-            labelPos,
-            styles.SelectionTitleColor * opacity,
-            rotation: 0,
-            origin: Vector2.Zero,
-            scale: Scale,
-            effects: SpriteEffects.None,
-            layerDepth: 0
-        );
+        var titleScale = Scale * 0.6f;
+
+        // Wrap title text to a max width
+        var wrappedTitle = Game1.parseText(item.Title, labelFont, 260).Split(Environment.NewLine);
+
+        // Limit to 2 lines max
+        if (wrappedTitle.Length > 2)
+        {
+            wrappedTitle = wrappedTitle[..2];
+        }
+
+        var titleY = centerY;
+
+        // Find the width of the longest line
+        var maxLineWidth = wrappedTitle.Max(line => labelFont.MeasureString(line).X) * titleScale;
+
+        foreach (var line in wrappedTitle)
+        {
+            var lineSize = labelFont.MeasureString(line) * titleScale;
+            // Center relative to max line width
+            var linePos = new Vector2(
+                centerX - maxLineWidth / 2f + (maxLineWidth - lineSize.X) / 2f,
+                titleY
+            );
+
+            spriteBatch.DrawString(
+                labelFont,
+                line,
+                linePos,
+                styles.SelectionTitleColor * opacity,
+                0f,
+                Vector2.Zero,
+                titleScale,
+                SpriteEffects.None,
+                0f
+            );
+
+            titleY += labelFont.LineSpacing * titleScale;
+        }
 
         var descriptionFont = Game1.smallFont;
         var descriptionText = item.Description;
-        var descriptionY = labelPos.Y + (labelFont.LineSpacing + 16.0f) * Scale;
+        // Calculate descriptionY based on the last title line's Y position
+        var descriptionY = titleY + 16.0f * Scale * 0.5f;
         var descriptionLines = Game1
             .parseText(descriptionText, descriptionFont, 400)
             .Split(Environment.NewLine);
         foreach (var descriptionLine in descriptionLines)
         {
-            var descriptionSize = descriptionFont.MeasureString(descriptionLine) * Scale;
+            // Scale down description to 40%
+            var descriptionSize = descriptionFont.MeasureString(descriptionLine) * Scale * 0.4f;
             var descriptionPos = new Vector2(centerX - descriptionSize.X / 2.0f, descriptionY);
-            descriptionY += descriptionFont.LineSpacing * Scale;
+            descriptionY += descriptionFont.LineSpacing * Scale * 0.4f;
             spriteBatch.DrawString(
                 descriptionFont,
                 descriptionLine,
@@ -260,7 +294,7 @@ public class RadialMenuPainter(GraphicsDevice graphicsDevice, Styles styles)
                 styles.SelectionDescriptionColor * opacity,
                 rotation: 0,
                 origin: Vector2.Zero,
-                scale: Scale,
+                scale: Scale * 0.4f,
                 effects: SpriteEffects.None,
                 layerDepth: 0
             );
@@ -418,6 +452,8 @@ public class RadialMenuPainter(GraphicsDevice graphicsDevice, Styles styles)
     private VertexPositionColor[] GenerateCursorVertices(float tipRadius, float angle)
     {
         var center = GetCirclePoint(tipRadius - styles.CursorSize / 2, angle);
+        // Apply vertical offset to match menu shift
+        center.Y += 0; // or a small tweak like 2-4 pixels
         // Compute the points for an origin-centered triangle, then offset.
         var radius = styles.CursorSize / ROOT_3;
         var p1 = center + radius * new Vector3(MathF.Sin(angle), -MathF.Cos(angle), 0);
