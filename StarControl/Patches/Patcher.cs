@@ -31,6 +31,19 @@ internal static class Patcher
         );
         TryPatch(
             harmony,
+            typeof(Game1),
+            "get_IsHudDrawn",
+            postfix: new(typeof(GamePatches), nameof(GamePatches.IsHudDrawn_Postfix))
+        );
+        TryPatch(
+            harmony,
+            typeof(Game1),
+            "drawHUD",
+            prefix: new(typeof(GamePatches), nameof(GamePatches.DrawHud_Prefix)),
+            postfix: new(typeof(GamePatches), nameof(GamePatches.DrawHud_Postfix))
+        );
+        TryPatch(
+            harmony,
             typeof(FishingRod),
             nameof(FishingRod.beginUsing),
             transpiler: genericGamePadStateTranspiler

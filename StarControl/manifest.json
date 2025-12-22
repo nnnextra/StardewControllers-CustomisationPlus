@@ -2,9 +2,9 @@
   "$schema": "https://smapi.io/schemas/manifest.json",
   "Name": "Star Control - CustomisationPlus",
   "Author": "nnnextra (forked from focustense)",
-  "Version": "1.1.0",
-  "Description": "Stardew controller framework with pie menus and button remapping (Smaller radial menus version)",
-  "UniqueID": "nnnextra.StarControl",
+  "Version": "1.1.2",
+  "Description": "Radial menus for toolbar, designed to be used with controllers",
+  "UniqueID": "focustense.StarControl",
   "EntryDll": "StarControl.dll",
   "Dependencies": [
     {

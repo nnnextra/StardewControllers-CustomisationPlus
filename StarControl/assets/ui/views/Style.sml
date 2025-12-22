@@ -1,7 +1,7 @@
 <lane *context={:~ConfigurationViewModel.Style} layout="stretch content" orientation="vertical">
     <form-heading title={#Config.Layout.Heading} />
     <form-row title={#Config.Layout.InnerRadius.Title} description={#Config.Layout.InnerRadius.Description}>
-        <slider track-width="75"
+        <slider track-width="300"
                 min="50"
                 max="400"
                 interval="10"
@@ -55,6 +55,67 @@
                 interval="1"
                 value={<>CursorDistance}
                 value-format={:FormatPixels} />
+    </form-row>
+    <form-row title="Item Name Size"
+              description="Scales the item name in the radial menu preview.">
+        <slider track-width="300"
+                min="0.5"
+                max="3"
+                interval="0.25"
+                value={<>SelectionTitleScale}
+                value-format={:FormatScale} />
+    </form-row>
+    <form-row title="Description Size"
+              description="Scales the item description text in the radial menu preview.">
+        <slider track-width="300"
+                min="0.5"
+                max="3"
+                interval="0.25"
+                value={<>SelectionDescriptionScale}
+                value-format={:FormatScale} />
+    </form-row>
+    <form-row title="Show Item Icon"
+              description="Shows the item icon in the radial menu preview.">
+        <checkbox is-checked={<>ShowSelectionIcon} />
+    </form-row>
+    <form-row title="Show Item Name"
+              description="Shows the item name in the radial menu preview.">
+        <checkbox is-checked={<>ShowSelectionTitle} />
+    </form-row>
+    <form-row title="Show Item Description"
+              description="Shows the item description in the radial menu preview.">
+        <checkbox is-checked={<>ShowSelectionDescription} />
+    </form-row>
+    <form-row title="Vertical position"
+              description="Moves the radial menu up or down on screen.">
+        <slider track-width="300"
+                min="-0.4"
+                max="0.5"
+                interval="0.02"
+                value={<>MenuVerticalOffset}
+                value-format={:FormatPercent} />
+    </form-row>
+    <form-row title="Horizontal position"
+              description="Moves the radial menu left or right on screen.">
+        <slider track-width="300"
+                min="-0.5"
+                max="0.5"
+                interval="0.02"
+                value={<>MenuHorizontalOffset}
+                value-format={:FormatPercent} />
+    </form-row>
+    <form-row title="Show Quick Actions"
+              description="Shows the quick action menus while a radial menu is open.">
+        <checkbox is-checked={<>ShowQuickActions} />
+    </form-row>
+    <form-row title="Quick Actions Size"
+              description="Scales the quick action menus.">
+        <slider track-width="300"
+                min="0.5"
+                max="1.5"
+                interval="0.1"
+                value={<>QuickActionScale}
+                value-format={:FormatScale} />
     </form-row>
 
     <form-heading title={#Config.Palette.Heading} />

@@ -23,7 +23,8 @@ public class ModIntegrationsConfiguration : IConfigEquatable<ModIntegrationsConf
     /// The order that the mods appear in this list is the same order in which their pages will
     /// appear in the Mod Menu when using the next/previous page buttons.
     /// </remarks>
-    public List<ModPriorityConfiguration> Priorities { get; set; } = [];
+    public List<ModPriorityConfiguration> Priorities { get; set; } =
+        [new ModPriorityConfiguration { ModId = "KCC.SnS", Enabled = true }];
 
     /// <inheritdoc />
     public bool Equals(ModIntegrationsConfiguration? other)

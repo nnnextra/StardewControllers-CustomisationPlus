@@ -32,6 +32,7 @@ internal static class ConfigurationMenu
         context.Controller = asRoot
             ? ViewEngine.OpenRootMenu("Configuration", context)
             : ViewEngine.OpenChildMenu("Configuration", context);
+        context.Controller.PositionSelector = context.GetMenuPosition;
         context.Controller.CanClose = () => context.IsNavigationEnabled;
         context.Controller.CloseAction = () =>
         {

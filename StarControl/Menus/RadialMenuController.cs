@@ -1,3 +1,4 @@
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StarControl.Config;
@@ -58,6 +59,8 @@ internal class RadialMenuController(
     private float menuOpenTimeMs;
     private float menuScale;
     private float quickSlotOpacity;
+    private bool? previousDisplayHud;
+    private Toolbar? hiddenToolbar;
 
     public void Draw(SpriteBatch b, Rectangle? viewport = null)
     {
@@ -66,7 +69,6 @@ internal class RadialMenuController(
             return;
         }
         viewport ??= Viewports.DefaultViewport;
-        b.Draw(Game1.fadeToBlackRect, viewport.Value, null, Color.Black * fadeOpacity);
         // Forcing a new sprite batch appears to be the only way to get the menu, which includes a
         // BasicEffect, to draw over rather than under the fade.
         b.End();
@@ -82,6 +84,11 @@ internal class RadialMenuController(
             viewport
         );
         quickSlotController.Draw(b, viewport.Value, quickSlotOpacity);
+    }
+
+    public void DrawFade(SpriteBatch b, Rectangle? viewport = null)
+    {
+        return;
     }
 
     public void Invalidate()
@@ -158,6 +165,10 @@ internal class RadialMenuController(
             }
         }
 
+        if (!IsMenuActive)
+        {
+            RestoreHudState();
+        }
         TryActivateQuickSlot();
     }
 
@@ -246,7 +257,7 @@ internal class RadialMenuController(
         menuOpenTimeMs += (float)elapsed.TotalMilliseconds;
         var menuProgress = MathHelper.Clamp(menuOpenTimeMs / MENU_ANIMATION_DURATION_MS, 0, 1);
         menuScale = menuProgress < 1 ? 1 - MathF.Pow(1 - menuProgress, 3) : 1;
-        fadeOpacity = 0f * (menuProgress < 1 ? MathF.Sin(menuProgress * MathF.PI / 2f) : 1);
+        fadeOpacity = 0f;
         var quickSlotProgress = MathHelper.Clamp(
             menuOpenTimeMs / QUICK_SLOT_ANIMATION_DURATION_MS,
             0,
@@ -311,6 +322,7 @@ internal class RadialMenuController(
         focusedIndex = -1;
         focusedItem = null;
         cursorAngle = null;
+        RestoreHudState();
         if (fromActivation)
         {
             if (!config.Input.ReopenOnHold)
@@ -324,6 +336,42 @@ internal class RadialMenuController(
         menuScale = 0;
         quickSlotOpacity = 0;
         fadeOpacity = 0;
+    }
+
+    public void PrepareHudForMenu()
+    {
+        previousDisplayHud ??= Game1.displayHUD;
+        Game1.displayHUD = true;
+        if (Game1.onScreenMenus is null)
+        {
+            return;
+        }
+        var toolbars = Game1.onScreenMenus.OfType<Toolbar>().ToList();
+        if (hiddenToolbar is null)
+        {
+            hiddenToolbar = toolbars.FirstOrDefault();
+        }
+        foreach (var toolbar in toolbars)
+        {
+            Game1.onScreenMenus.Remove(toolbar);
+        }
+    }
+
+    public void RestoreHudState()
+    {
+        if (previousDisplayHud is not null)
+        {
+            Game1.displayHUD = previousDisplayHud.Value;
+            previousDisplayHud = null;
+        }
+        if (hiddenToolbar is not null && Game1.onScreenMenus is not null)
+        {
+            if (!Game1.onScreenMenus.Contains(hiddenToolbar))
+            {
+                Game1.onScreenMenus.Add(hiddenToolbar);
+            }
+            hiddenToolbar = null;
+        }
     }
 
     private bool SuppressIfPressed(SButton button)

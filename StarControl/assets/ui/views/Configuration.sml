@@ -1,5 +1,5 @@
-﻿<frame layout="800px content[774..]"
-       margin="0, 32, 0, 0"
+﻿<frame layout={:MenuLayout}
+       margin="0, 16, 0, 0"
 	   background={@Mods/StardewUI/Sprites/MenuBackground}
        border={@Mods/StardewUI/Sprites/MenuBorder}
        border-thickness="36, 36, 40, 36"
@@ -7,10 +7,10 @@
        border-size={>ContentPanelSize}
        button-press=|HandleButtonPress($Button)|
        click=|CancelBlockingAction()|>
-    <frame *float="above; 0, 16"
+    <frame *float="above; 0, 36"
            *context={:Pager}
            layout="stretch content"
-           margin="36, 0"
+           margin="20, 0"
            background={@Mods/StardewUI/Sprites/MenuSlotInset}
            padding="12, 10, 12, 4"
            pointer-events-enabled={IsNavigationEnabled}
@@ -32,17 +32,25 @@
         </segments>
     </frame>
     <panel *context={:Pager}
-           layout="stretch content"
+           layout="stretch stretch"
            margin="0, 0, 0, 4"
            clip-size="stretch">
         <frame *repeat={Pages}
                *if={Loaded}
-               layout="stretch content"
+               layout="stretch stretch"
                pointer-events-enabled={Selected}
                transform={Transform}
                +transition:transform="200ms EaseOutCubic"
                visibility={Visible}>
-            <include name={:PageAssetName} />
+            <scrollable layout="stretch"
+                        peeking="64"
+                        scrollbar-margin="-46, 0, 0, 0"
+                        scrollbar-visibility="Visible">
+                <panel layout="stretch content"
+                       margin="0, 0, 32, 0">
+                    <include name={:PageAssetName} />
+                </panel>
+            </scrollable>
         </frame>
     </panel>
     <lane *float="below; -24, -44"
@@ -63,6 +71,7 @@
                        action="Save" />
     </lane>
     <frame *float="after; -16, -32"
+           *if={^IsPreviewEnabled}
            *context={:Preview}
            layout="content stretch"
            vertical-content-alignment="middle"
@@ -81,7 +90,7 @@
                        shadow-color="#666"
                        shadow-offset="-3, 3"
                        text={#Config.Preview.Heading} />
-                <image sprite={:Texture} />
+                <image layout={^PreviewLayout} sprite={:Sprite} />
             </lane>
         </frame>
     </frame>
@@ -90,8 +99,8 @@
 <template name="nav-tab">
     <lane *switch={:Id}
           orientation="vertical"
-          margin="12, 0"
-          padding="8"
+          margin="8, 0"
+          padding="4"
           horizontal-content-alignment="middle"
           focusable="true"
           click=|^SelectPage(Index)|>
@@ -116,7 +125,7 @@
 </template>
 
 <template name="nav-image">
-    <image layout="64px"
+    <image layout="56px"
            sprite={&icon}
            shadow-alpha="0.4"
            shadow-offset="-4, 4" />

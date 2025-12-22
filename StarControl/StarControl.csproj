@@ -2,7 +2,7 @@
   <PropertyGroup>
     <AssemblyName>StarControl</AssemblyName>
     <RootNamespace>StarControl</RootNamespace>
-    <Version>1.0.3</Version>
+    <Version>1.1.2</Version>
     <TargetFramework>net6.0</TargetFramework>
     <LangVersion>Latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>

@@ -2,12 +2,16 @@ using System.Reflection;
 using System.Reflection.Emit;
 using HarmonyLib;
 using Microsoft.Xna.Framework.Input;
+using StardewValley.Menus;
 
 namespace StarControl.Patches;
 
 internal static class GamePatches
 {
     public static bool SuppressRightStickChatBox { get; set; }
+    public static Func<bool>? IsRadialMenuActive { get; set; }
+
+    private static List<IClickableMenu>? removedHudMenus;
 
     private static readonly MethodInfo IsButtonDownMethod = AccessTools.Method(
         typeof(GamePadState),
@@ -17,6 +21,45 @@ internal static class GamePatches
         typeof(GamePatches),
         nameof(IsRightStickDownOrSuppressed)
     );
+
+    public static void IsHudDrawn_Postfix(ref bool __result)
+    {
+        if (IsRadialMenuActive?.Invoke() == true)
+        {
+            Game1.displayHUD = true;
+            __result = true;
+        }
+    }
+
+    public static void DrawHud_Prefix()
+    {
+        if (IsRadialMenuActive?.Invoke() != true || Game1.onScreenMenus is null)
+        {
+            return;
+        }
+        Game1.displayHUD = true;
+        removedHudMenus = Game1.onScreenMenus.OfType<Toolbar>().Cast<IClickableMenu>().ToList();
+        foreach (var menu in removedHudMenus)
+        {
+            Game1.onScreenMenus.Remove(menu);
+        }
+    }
+
+    public static void DrawHud_Postfix()
+    {
+        if (removedHudMenus is null || Game1.onScreenMenus is null)
+        {
+            return;
+        }
+        foreach (var menu in removedHudMenus)
+        {
+            if (!Game1.onScreenMenus.Contains(menu))
+            {
+                Game1.onScreenMenus.Add(menu);
+            }
+        }
+        removedHudMenus = null;
+    }
 
     public static IEnumerable<CodeInstruction> UpdateChatBox_Transpiler(
         IEnumerable<CodeInstruction> instructions,

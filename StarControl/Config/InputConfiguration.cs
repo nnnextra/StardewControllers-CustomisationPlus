@@ -34,7 +34,8 @@ public class InputConfiguration : IConfigEquatable<InputConfiguration>
     /// Alternate method to invoke an item's primary action in place of the
     /// <see cref="PrimaryActionButton"/>.
     /// </summary>
-    public ItemActivationMethod PrimaryActivationMethod { get; set; }
+    public ItemActivationMethod PrimaryActivationMethod { get; set; } =
+        ItemActivationMethod.TriggerRelease;
 
     /// <summary>
     /// Button to perform the secondary action on the selected menu item (typically "select").
@@ -45,7 +46,8 @@ public class InputConfiguration : IConfigEquatable<InputConfiguration>
     /// Alternate method to invoke an item's secondary action in place of the
     /// <see cref="SecondaryActionButton"/>.
     /// </summary>
-    public ItemActivationMethod SecondaryActivationMethod { get; set; }
+    public ItemActivationMethod SecondaryActivationMethod { get; set; } =
+        ItemActivationMethod.Keybind;
 
     /// <summary>
     /// Selects which thumbstick is used to navigate the wheel after opening.
@@ -80,7 +82,7 @@ public class InputConfiguration : IConfigEquatable<InputConfiguration>
     /// players. If assigning this to the right stick, that option should be enabled as well.
     /// </para>
     /// </remarks>
-    public SButton RemappingHudButton { get; set; }
+    public SButton RemappingHudButton { get; set; } = SButton.None;
 
     /// <summary>
     /// Whether to allow reopening the menu after an item activation if the corresponding trigger
@@ -103,7 +105,7 @@ public class InputConfiguration : IConfigEquatable<InputConfiguration>
     /// the selected item before the item activation completes. Only applies to actions meeting the
     /// <see cref="DelayedActions"/> criteria.
     /// </summary>
-    public int ActivationDelayMs { get; set; } = 250;
+    public int ActivationDelayMs { get; set; } = 150;
 
     /// <summary>
     /// Whether to remember the player's previous selection per menu.

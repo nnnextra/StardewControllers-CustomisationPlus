@@ -2,6 +2,7 @@ using System.ComponentModel;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StarControl.Config;
+using StarControl.Graphics;
 using StarControl.Menus;
 using StardewValley.ItemTypeDefinitions;
 
@@ -10,9 +11,12 @@ namespace StarControl.UI;
 internal class RadialMenuPreview : IDisposable
 {
     public Texture2D? Texture => !renderTarget.IsDisposed ? renderTarget : null;
+    public Sprite? Sprite =>
+        Texture is not null ? new(Texture, new(0, 0, Texture.Width, Texture.Height)) : null;
 
     private readonly StyleConfigurationViewModel context;
     private readonly RadialMenuPainter painter;
+    private readonly SpriteBatch previewSpriteBatch;
     private readonly PreviewItem[] previewItems =
     [
         new("(T)GoldAxe"),
@@ -27,25 +31,44 @@ internal class RadialMenuPreview : IDisposable
     ];
     private readonly RenderTarget2D renderTarget;
     private readonly Styles styles = new();
+    private const float PreviewScale = 1.0f;
 
     public RadialMenuPreview(StyleConfigurationViewModel context, int width, int height)
     {
         this.context = context;
         context.PropertyChanged += Context_PropertyChanged;
-        renderTarget = new(Game1.graphics.GraphicsDevice, width, height);
+        previewSpriteBatch = new(Game1.graphics.GraphicsDevice);
+        renderTarget = new(
+            Game1.graphics.GraphicsDevice,
+            width,
+            height,
+            false,
+            SurfaceFormat.Color,
+            DepthFormat.None,
+            0,
+            RenderTargetUsage.PreserveContents
+        );
         painter = new(Game1.graphics.GraphicsDevice, styles)
         {
             Items = previewItems,
             RenderTarget = renderTarget,
-            Scale = 0.5f,
+            Scale = PreviewScale,
+            UseStyleOffsets = false,
         };
+        Draw();
     }
 
     public void Dispose()
     {
         painter.RenderTarget = null;
         renderTarget.Dispose();
+        previewSpriteBatch.Dispose();
         GC.SuppressFinalize(this);
+    }
+
+    public void Refresh()
+    {
+        Draw();
     }
 
     private void Context_PropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -57,13 +80,20 @@ internal class RadialMenuPreview : IDisposable
 
     private void Draw()
     {
+        UpdatePreviewLayout();
         painter.Paint(
-            Game1.spriteBatch,
+            previewSpriteBatch,
             selectedIndex: 1,
             focusedIndex: 3,
             selectionAngle: MathHelper.ToRadians(120),
             selectionBlend: 1f
         );
+    }
+
+    private void UpdatePreviewLayout()
+    {
+        painter.VerticalOffset = 0f;
+        painter.HorizontalOffset = 0f;
     }
 
     private class PreviewItem(string itemId, int? stackSize = null) : IRadialMenuItem

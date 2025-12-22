@@ -16,6 +16,10 @@ internal class QuickSlotController(
 
     public void Draw(SpriteBatch spriteBatch, Rectangle viewport, float opacity = 1)
     {
+        if (!config.Style.ShowQuickActions)
+        {
+            return;
+        }
         if (isDirty)
         {
             RefreshSlots();

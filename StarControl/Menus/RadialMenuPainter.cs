@@ -25,6 +25,8 @@ public class RadialMenuPainter(GraphicsDevice graphicsDevice, Styles styles)
     public RenderTarget2D? RenderTarget { get; set; }
     public float Scale { get; set; } = 1f;
     public float VerticalOffset { get; set; } = 0.3f;
+    public float HorizontalOffset { get; set; } = 0f;
+    public bool UseStyleOffsets { get; set; } = true;
 
     private readonly BasicEffect effect = new(graphicsDevice)
     {
@@ -35,6 +37,7 @@ public class RadialMenuPainter(GraphicsDevice graphicsDevice, Styles styles)
 
     private VertexPositionColor[] innerVertices = [];
     private VertexPositionColor[] outerVertices = [];
+    private RenderTarget2D? textRenderTarget;
     private float previousScale = 1f;
     private float selectionBlend = 1.0f;
     private SelectionState selectionState = new(ItemCount: 0, SelectedIndex: 0, FocusedIndex: 0);
@@ -54,6 +57,12 @@ public class RadialMenuPainter(GraphicsDevice graphicsDevice, Styles styles)
         Rectangle? viewport = null
     )
     {
+        if (UseStyleOffsets)
+        {
+            VerticalOffset = styles.MenuVerticalOffset;
+            HorizontalOffset = styles.MenuHorizontalOffset;
+        }
+        var horizontalOffset = HorizontalOffset;
         if (Scale <= 0)
         {
             return;
@@ -76,8 +85,9 @@ public class RadialMenuPainter(GraphicsDevice graphicsDevice, Styles styles)
             UpdateVertexColors();
         }
         viewport ??= RenderTarget?.Bounds ?? Viewports.DefaultViewport;
+        var usesRenderTarget = RenderTarget is not null;
         RenderTargetBinding[]? previousTargets = null;
-        if (RenderTarget is not null)
+        if (usesRenderTarget)
         {
             previousTargets = graphicsDevice.GetRenderTargets();
             graphicsDevice.SetRenderTarget(RenderTarget);
@@ -95,9 +105,16 @@ public class RadialMenuPainter(GraphicsDevice graphicsDevice, Styles styles)
         );
         try
         {
-            PaintBackgrounds(viewport.Value, selectionAngle);
-            PaintItems(spriteBatch, viewport.Value);
-            PaintSelectionDetails(spriteBatch, viewport.Value);
+            PaintBackgrounds(viewport.Value, selectionAngle, horizontalOffset);
+            PaintItems(spriteBatch, viewport.Value, horizontalOffset);
+            spriteBatch.End();
+            spriteBatch.Begin(
+                SpriteSortMode.Deferred,
+                BlendState.AlphaBlend,
+                rasterizerState: new() { MultiSampleAntiAlias = false },
+                samplerState: SamplerState.PointClamp
+            );
+            PaintSelectionDetails(spriteBatch, viewport.Value, horizontalOffset);
         }
         finally
         {
@@ -109,10 +126,10 @@ public class RadialMenuPainter(GraphicsDevice graphicsDevice, Styles styles)
         }
     }
 
-    private void PaintBackgrounds(Rectangle viewport, float? selectionAngle)
+    private void PaintBackgrounds(Rectangle viewport, float? selectionAngle, float horizontalOffset)
     {
         effect.World = Matrix.CreateTranslation(
-            viewport.X,
+            viewport.X + viewport.Width * horizontalOffset,
             viewport.Y + viewport.Height * VerticalOffset,
             0
         );
@@ -152,9 +169,9 @@ public class RadialMenuPainter(GraphicsDevice graphicsDevice, Styles styles)
         }
     }
 
-    private void PaintItems(SpriteBatch spriteBatch, Rectangle viewport)
+    private void PaintItems(SpriteBatch spriteBatch, Rectangle viewport, float horizontalOffset)
     {
-        var centerX = viewport.X + viewport.Width / 2.0f;
+        var centerX = viewport.X + viewport.Width / 2.0f + viewport.Width * horizontalOffset;
         var centerY = viewport.Y + viewport.Height / 2.0f + viewport.Height * VerticalOffset;
         var itemRadius = (styles.InnerRadius + styles.GapWidth + styles.OuterRadius / 2.0f) * Scale;
         var angleBetweenItems = TWO_PI / Items.Count;
@@ -201,7 +218,11 @@ public class RadialMenuPainter(GraphicsDevice graphicsDevice, Styles styles)
         }
     }
 
-    private void PaintSelectionDetails(SpriteBatch spriteBatch, Rectangle viewport)
+    private void PaintSelectionDetails(
+        SpriteBatch spriteBatch,
+        Rectangle viewport,
+        float horizontalOffset
+    )
     {
         if (selectionState.FocusedIndex < 0)
         {
@@ -214,14 +235,18 @@ public class RadialMenuPainter(GraphicsDevice graphicsDevice, Styles styles)
             return;
         }
 
-        var centerX = viewport.X + viewport.Width / 2.0f;
+        var centerX = viewport.X + viewport.Width / 2.0f + viewport.Width * horizontalOffset;
         var centerY = viewport.Y + viewport.Height / 2.0f + viewport.Height * VerticalOffset;
         var opacity = item.Enabled ? 1 : 0.5f;
-        if (item.Texture is not null)
+        if (styles.ShowSelectionIcon && item.Texture is not null)
         {
             // Make icon 50% larger (height * 1.5)
             var itemDrawSize = GetScaledSize(item, styles.SelectionSpriteHeight * Scale * 1.5f);
-            var itemPos = new Vector2(centerX - itemDrawSize.X / 2, centerY - itemDrawSize.Y - 12); // nudge down 12 pixels
+            var centeredX = MathF.Round(centerX);
+            var itemPos = new Vector2(
+                centeredX - itemDrawSize.X / 2f,
+                centerY - itemDrawSize.Y - 12
+            );
             var itemRect = new Rectangle(itemPos.ToPoint(), itemDrawSize);
             var baseColor = item.TintRectangle is null
                 ? (item.TintColor ?? Color.White)
@@ -233,72 +258,177 @@ public class RadialMenuPainter(GraphicsDevice graphicsDevice, Styles styles)
             }
         }
 
-        var labelFont = Game1.dialogueFont;
-        var titleScale = Scale * 0.6f;
-
-        // Wrap title text to a max width
-        var wrappedTitle = Game1.parseText(item.Title, labelFont, 260).Split(Environment.NewLine);
-
-        // Limit to 2 lines max
-        if (wrappedTitle.Length > 2)
-        {
-            wrappedTitle = wrappedTitle[..2];
-        }
-
+        var centeredTextX = centerX + 3f;
         var titleY = centerY;
-
-        // Find the width of the longest line
-        var maxLineWidth = wrappedTitle.Max(line => labelFont.MeasureString(line).X) * titleScale;
-
-        foreach (var line in wrappedTitle)
+        var innerDiameter = styles.InnerRadius * Scale * 2f;
+        if (styles.ShowSelectionTitle)
         {
-            var lineSize = labelFont.MeasureString(line) * titleScale;
-            // Center relative to max line width
-            var linePos = new Vector2(
-                centerX - maxLineWidth / 2f + (maxLineWidth - lineSize.X) / 2f,
-                titleY
-            );
-
-            spriteBatch.DrawString(
-                labelFont,
-                line,
-                linePos,
+            var titleScale = MathF.Max(0.5f, styles.SelectionTitleScale);
+            var titleMaxLines = titleScale < 1f ? 3 : 2;
+            var titleMaxWidth = (int)MathF.Max(1f, (innerDiameter - 48f) / titleScale);
+            var wrappedTitle = Game1
+                .parseText(item.Title, Game1.smallFont, titleMaxWidth)
+                .Split(Environment.NewLine);
+            if (wrappedTitle.Length > titleMaxLines)
+            {
+                wrappedTitle = wrappedTitle[..titleMaxLines];
+            }
+            titleY += DrawTextBlock(
+                spriteBatch,
+                Game1.smallFont,
+                wrappedTitle,
                 styles.SelectionTitleColor * opacity,
-                0f,
-                Vector2.Zero,
-                titleScale,
-                SpriteEffects.None,
-                0f
+                centeredTextX,
+                titleY,
+                titleScale
             );
-
-            titleY += labelFont.LineSpacing * titleScale;
         }
 
-        var descriptionFont = Game1.smallFont;
-        var descriptionText = item.Description;
-        // Calculate descriptionY based on the last title line's Y position
-        var descriptionY = titleY + 16.0f * Scale * 0.5f;
-        var descriptionLines = Game1
-            .parseText(descriptionText, descriptionFont, 400)
-            .Split(Environment.NewLine);
-        foreach (var descriptionLine in descriptionLines)
+        if (styles.ShowSelectionDescription)
         {
-            // Scale down description to 40%
-            var descriptionSize = descriptionFont.MeasureString(descriptionLine) * Scale * 0.4f;
-            var descriptionPos = new Vector2(centerX - descriptionSize.X / 2.0f, descriptionY);
-            descriptionY += descriptionFont.LineSpacing * Scale * 0.4f;
-            spriteBatch.DrawString(
-                descriptionFont,
-                descriptionLine,
-                descriptionPos,
+            var descriptionText = item.Description;
+            var descriptionScale = MathF.Max(0.5f, styles.SelectionDescriptionScale);
+            var descriptionY = titleY + 16.0f * descriptionScale;
+            var descriptionMaxWidth = (int)MathF.Max(1f, (innerDiameter - 32f) / descriptionScale);
+            var descriptionLines = Game1
+                .parseText(descriptionText, Game1.smallFont, descriptionMaxWidth)
+                .Split(Environment.NewLine);
+            DrawTextBlock(
+                spriteBatch,
+                Game1.smallFont,
+                descriptionLines,
                 styles.SelectionDescriptionColor * opacity,
-                rotation: 0,
-                origin: Vector2.Zero,
-                scale: Scale * 0.4f,
-                effects: SpriteEffects.None,
-                layerDepth: 0
+                centeredTextX,
+                descriptionY,
+                descriptionScale
             );
         }
+    }
+
+    private float DrawTextBlock(
+        SpriteBatch spriteBatch,
+        SpriteFont font,
+        string[] lines,
+        Color color,
+        float centerX,
+        float startY,
+        float scale
+    )
+    {
+        if (lines.Length == 0)
+        {
+            return 0f;
+        }
+
+        var maxLineWidth = lines.Max(line => font.MeasureString(line).X);
+        var lineHeight = font.LineSpacing * scale;
+        if (scale >= 1f)
+        {
+            foreach (var line in lines)
+            {
+                var lineWidth = font.MeasureString(line).X;
+                var linePos = new Vector2(
+                    MathF.Round(
+                        centerX
+                            - maxLineWidth * scale / 2f
+                            + (maxLineWidth - lineWidth) * scale / 2f
+                    ),
+                    MathF.Round(startY)
+                );
+                spriteBatch.DrawString(
+                    font,
+                    line,
+                    linePos,
+                    color,
+                    0f,
+                    Vector2.Zero,
+                    scale,
+                    SpriteEffects.None,
+                    0f
+                );
+                startY += lineHeight;
+            }
+            return lineHeight * lines.Length;
+        }
+
+        const int padding = 4;
+        var textWidth = Math.Max(1, (int)MathF.Ceiling(maxLineWidth) + 4);
+        var textHeight = Math.Max(1, (int)MathF.Ceiling(font.LineSpacing * lines.Length) + 4);
+        var targetWidth = textWidth + padding * 2;
+        var targetHeight = textHeight + padding * 2;
+        var target = EnsureTextRenderTarget(targetWidth, targetHeight);
+
+        spriteBatch.End();
+        var previousViewport = graphicsDevice.Viewport;
+        var previousTargets = graphicsDevice.GetRenderTargets();
+        graphicsDevice.SetRenderTarget(target);
+        graphicsDevice.Clear(Color.Transparent);
+        spriteBatch.Begin(
+            SpriteSortMode.Deferred,
+            BlendState.AlphaBlend,
+            rasterizerState: new() { MultiSampleAntiAlias = false },
+            samplerState: SamplerState.PointClamp
+        );
+        var textY = (float)padding;
+        foreach (var line in lines)
+        {
+            var lineWidth = font.MeasureString(line).X;
+            var linePos = new Vector2(
+                padding + MathF.Round((maxLineWidth - lineWidth) / 2f),
+                MathF.Round(textY)
+            );
+            spriteBatch.DrawString(font, line, linePos, color);
+            textY += font.LineSpacing;
+        }
+        spriteBatch.End();
+        graphicsDevice.SetRenderTargets(previousTargets);
+        graphicsDevice.Viewport = previousViewport;
+        spriteBatch.Begin(
+            SpriteSortMode.Deferred,
+            BlendState.AlphaBlend,
+            rasterizerState: new() { MultiSampleAntiAlias = false },
+            samplerState: SamplerState.PointClamp
+        );
+
+        var destWidth = MathF.Round(textWidth * scale);
+        var destHeight = MathF.Round(textHeight * scale);
+        var destPos = new Vector2(MathF.Round(centerX - destWidth / 2f), MathF.Round(startY));
+        spriteBatch.Draw(
+            target,
+            new Rectangle(
+                (int)destPos.X,
+                (int)destPos.Y,
+                Math.Max(1, (int)destWidth),
+                Math.Max(1, (int)destHeight)
+            ),
+            new Rectangle(padding, padding, textWidth, textHeight),
+            Color.White
+        );
+        return destHeight;
+    }
+
+    private RenderTarget2D EnsureTextRenderTarget(int width, int height)
+    {
+        if (
+            textRenderTarget is not null
+            && textRenderTarget.Width == width
+            && textRenderTarget.Height == height
+        )
+        {
+            return textRenderTarget;
+        }
+        textRenderTarget?.Dispose();
+        textRenderTarget = new RenderTarget2D(
+            graphicsDevice,
+            width,
+            height,
+            false,
+            SurfaceFormat.Color,
+            DepthFormat.None,
+            0,
+            RenderTargetUsage.PreserveContents
+        );
+        return textRenderTarget;
     }
 
     private bool GenerateVertices()

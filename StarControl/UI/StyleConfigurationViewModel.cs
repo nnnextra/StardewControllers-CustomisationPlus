@@ -6,6 +6,8 @@ namespace StarControl.UI;
 internal partial class StyleConfigurationViewModel
 {
     public Func<float, string> FormatPixels { get; } = v => v.ToString("f0") + " px";
+    public Func<float, string> FormatScale { get; } = v => v.ToString("0.00") + "x";
+    public Func<float, string> FormatPercent { get; } = v => (v * 100).ToString("f0") + "%";
 
     /// <inheritdoc cref="Styles.InnerBackgroundColor" />
     [Notify]
@@ -63,9 +65,57 @@ internal partial class StyleConfigurationViewModel
     [Notify]
     private Color selectionTitleColor;
 
+    /// <inheritdoc cref="Styles.SelectionTitleScale" />
+    [Notify]
+    private float selectionTitleScale;
+
+    /// <inheritdoc cref="Styles.SelectionTitleShadowColor" />
+    [Notify]
+    private Color selectionTitleShadowColor;
+
+    /// <inheritdoc cref="Styles.SelectionTitleShadowAlpha" />
+    [Notify]
+    private float selectionTitleShadowAlpha;
+
+    /// <inheritdoc cref="Styles.SelectionTitleShadowOffset" />
+    [Notify]
+    private Vector2 selectionTitleShadowOffset;
+
+    /// <inheritdoc cref="Styles.ShowSelectionIcon" />
+    [Notify]
+    private bool showSelectionIcon;
+
+    /// <inheritdoc cref="Styles.ShowSelectionTitle" />
+    [Notify]
+    private bool showSelectionTitle;
+
     /// <inheritdoc cref="Styles.SelectionDescriptionColor" />
     [Notify]
     private Color selectionDescriptionColor;
+
+    /// <inheritdoc cref="Styles.SelectionDescriptionScale" />
+    [Notify]
+    private float selectionDescriptionScale;
+
+    /// <inheritdoc cref="Styles.ShowSelectionDescription" />
+    [Notify]
+    private bool showSelectionDescription;
+
+    /// <inheritdoc cref="Styles.MenuVerticalOffset" />
+    [Notify]
+    private float menuVerticalOffset;
+
+    /// <inheritdoc cref="Styles.MenuHorizontalOffset" />
+    [Notify]
+    private float menuHorizontalOffset;
+
+    /// <inheritdoc cref="Styles.ShowQuickActions" />
+    [Notify]
+    private bool showQuickActions;
+
+    /// <inheritdoc cref="Styles.QuickActionScale" />
+    [Notify]
+    private float quickActionScale;
 
     public void Load(Styles config)
     {
@@ -83,7 +133,19 @@ internal partial class StyleConfigurationViewModel
         CursorColor = config.CursorColor;
         SelectionSpriteHeight = config.SelectionSpriteHeight;
         SelectionTitleColor = config.SelectionTitleColor;
+        SelectionTitleScale = config.SelectionTitleScale;
+        SelectionTitleShadowColor = config.SelectionTitleShadowColor;
+        SelectionTitleShadowAlpha = config.SelectionTitleShadowAlpha;
+        SelectionTitleShadowOffset = config.SelectionTitleShadowOffset;
+        ShowSelectionIcon = config.ShowSelectionIcon;
+        ShowSelectionTitle = config.ShowSelectionTitle;
         SelectionDescriptionColor = config.SelectionDescriptionColor;
+        SelectionDescriptionScale = config.SelectionDescriptionScale;
+        ShowSelectionDescription = config.ShowSelectionDescription;
+        MenuVerticalOffset = config.MenuVerticalOffset;
+        MenuHorizontalOffset = config.MenuHorizontalOffset;
+        ShowQuickActions = config.ShowQuickActions;
+        QuickActionScale = config.QuickActionScale;
     }
 
     public void Save(Styles config)
@@ -102,6 +164,18 @@ internal partial class StyleConfigurationViewModel
         config.CursorColor = new(CursorColor);
         config.SelectionSpriteHeight = SelectionSpriteHeight;
         config.SelectionTitleColor = new(SelectionTitleColor);
+        config.SelectionTitleScale = SelectionTitleScale;
+        config.SelectionTitleShadowColor = new(SelectionTitleShadowColor);
+        config.SelectionTitleShadowAlpha = SelectionTitleShadowAlpha;
+        config.SelectionTitleShadowOffset = SelectionTitleShadowOffset;
+        config.ShowSelectionIcon = ShowSelectionIcon;
+        config.ShowSelectionTitle = ShowSelectionTitle;
         config.SelectionDescriptionColor = new(SelectionDescriptionColor);
+        config.SelectionDescriptionScale = SelectionDescriptionScale;
+        config.ShowSelectionDescription = ShowSelectionDescription;
+        config.MenuVerticalOffset = MenuVerticalOffset;
+        config.MenuHorizontalOffset = MenuHorizontalOffset;
+        config.ShowQuickActions = ShowQuickActions;
+        config.QuickActionScale = QuickActionScale;
     }
 }

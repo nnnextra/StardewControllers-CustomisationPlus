@@ -68,10 +68,13 @@ public class ModEntry : Mod
         // For optimal latency: handle input before the Update loop, perform actions/rendering after.
         helper.Events.GameLoop.UpdateTicking += GameLoop_UpdateTicking;
         helper.Events.Input.ButtonsChanged += Input_ButtonsChanged;
+        helper.Events.Display.RenderingHud += Display_RenderingHud;
         helper.Events.Display.RenderedHud += Display_RenderedHud;
 
         Patcher.PatchAll(ModManifest);
         GamePatches.SuppressRightStickChatBox = config.Input.SuppressRightStickChatBox;
+        GamePatches.IsRadialMenuActive = () =>
+            menuController.IsActiveForScreen() && menuController.Value.IsMenuActive;
     }
 
     public override object? GetApi()
@@ -112,6 +115,14 @@ public class ModEntry : Mod
         if (Context.IsPlayerFree && !MenuController.IsMenuActive)
         {
             RemappingController.Draw(e.SpriteBatch);
+        }
+    }
+
+    private void Display_RenderingHud(object? sender, RenderingHudEventArgs e)
+    {
+        if (MenuController.IsMenuActive)
+        {
+            MenuController.PrepareHudForMenu();
         }
     }
 
@@ -187,6 +198,14 @@ public class ModEntry : Mod
         else if (wasActive && !MenuController.IsMenuActive)
         {
             Game1.freezeControls = false;
+        }
+        if (MenuController.IsMenuActive)
+        {
+            MenuController.PrepareHudForMenu();
+        }
+        else
+        {
+            MenuController.RestoreHudState();
         }
         RemappingController.Update(
             Game1.currentGameTime.ElapsedGameTime,

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using PropertyChanged.SourceGenerator;
 using StarControl.Config;
@@ -7,6 +8,17 @@ namespace StarControl.UI;
 
 internal partial class ConfigurationViewModel : IDisposable
 {
+    private const int BaseMenuWidth = 800;
+    private const int BaseMenuHeight = 680;
+    private const int MinMenuWidth = 520;
+    private const int MinMenuHeight = 420;
+    private const int ViewportPaddingWidth = 128;
+    private const int ViewportPaddingHeight = 240;
+    private const int PreviewMaxSize = 500;
+    private const int PreviewMinSize = 240;
+    private const int PreviewHorizontalPadding = 80;
+    private const int MenuVerticalNudge = -24;
+
     public static event EventHandler<EventArgs>? Saved;
 
     public IMenuController? Controller { get; set; }
@@ -29,6 +41,15 @@ internal partial class ConfigurationViewModel : IDisposable
     private bool isNavigationEnabled = true;
 
     [Notify]
+    private string menuLayout = $"{BaseMenuWidth}px {BaseMenuHeight}px";
+
+    [Notify]
+    private string previewLayout = $"{PreviewMaxSize}px";
+
+    [Notify]
+    private bool isPreviewEnabled = true;
+
+    [Notify]
     private bool isPreviewVisible;
 
     private readonly ModConfig config;
@@ -37,10 +58,15 @@ internal partial class ConfigurationViewModel : IDisposable
     private int loadingFrameCount;
     private int loadingPageIndex = 1;
 
+    public int MenuWidth { get; private set; } = BaseMenuWidth;
+    public int MenuHeight { get; private set; } = BaseMenuHeight;
+    public int PreviewWidth { get; private set; } = PreviewMaxSize;
+
     public ConfigurationViewModel(IModHelper helper, ModConfig config)
     {
         this.helper = helper;
         this.config = config;
+        UpdateLayoutForViewport();
         var modId = helper.ModContent.ModID;
         var selfPriority = ModPriorityViewModel.Self(modId, Items);
         Mods = new(helper.ModRegistry, selfPriority);
@@ -114,6 +140,25 @@ internal partial class ConfigurationViewModel : IDisposable
             default:
                 throw new ArgumentException($"Unsupported menu action: {action}");
         }
+    }
+
+    public void OpenStylePreview()
+    {
+        Preview.Refresh();
+        var controller = ViewEngine.OpenChildMenu("StylePreview", Preview);
+        controller.CloseOnOutsideClick = true;
+        controller.DimmingAmount = 0.5f;
+    }
+
+    public Point GetMenuPosition()
+    {
+        var viewport = Game1.uiViewport;
+        var combinedWidth = IsPreviewEnabled
+            ? MenuWidth + PreviewWidth + PreviewHorizontalPadding
+            : MenuWidth;
+        var x = (viewport.Width - combinedWidth) / 2;
+        var y = (viewport.Height - MenuHeight) / 2 + MenuVerticalNudge;
+        return new Point(Math.Max(0, x), Math.Max(0, y));
     }
 
     public void Reload()
@@ -230,8 +275,40 @@ internal partial class ConfigurationViewModel : IDisposable
     {
         if (e.PropertyName == nameof(Pager.SelectedPageIndex))
         {
-            IsPreviewVisible = Pager.SelectedPageIndex == 1; // Styles
+            UpdatePreviewVisibility();
         }
+    }
+
+    private void UpdateLayoutForViewport()
+    {
+        var viewport = Game1.uiViewport;
+        var width = Math.Min(
+            BaseMenuWidth,
+            Math.Max(MinMenuWidth, viewport.Width - ViewportPaddingWidth)
+        );
+        var height = Math.Min(
+            BaseMenuHeight,
+            Math.Max(MinMenuHeight, viewport.Height - ViewportPaddingHeight)
+        );
+        MenuWidth = width;
+        MenuHeight = height;
+        MenuLayout = $"{width}px {height}px";
+
+        var availablePreviewWidth = Math.Max(0, viewport.Width - width - PreviewHorizontalPadding);
+        var previewMaxSize = Math.Min(PreviewMaxSize, availablePreviewWidth);
+        var previewSize = Math.Min(
+            previewMaxSize,
+            Math.Max(PreviewMinSize, height - ViewportPaddingHeight / 2)
+        );
+        PreviewWidth = previewSize;
+        PreviewLayout = $"{previewSize}px";
+        IsPreviewEnabled = previewSize >= PreviewMinSize && availablePreviewWidth >= PreviewMinSize;
+        UpdatePreviewVisibility();
+    }
+
+    private void UpdatePreviewVisibility()
+    {
+        IsPreviewVisible = IsPreviewEnabled && Pager.SelectedPageIndex == 1; // Styles
     }
 
     private void SaveSections(ModConfig config)

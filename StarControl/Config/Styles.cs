@@ -13,17 +13,17 @@ public class Styles : IConfigEquatable<Styles>
     /// <summary>
     /// Background color of the inner area where a preview of the current selection is displayed.
     /// </summary>
-    public HexColor InnerBackgroundColor { get; set; } = new(new Color(0.05f, 0.05f, 0.05f, 0.9f));
+    public HexColor InnerBackgroundColor { get; set; } = new(new Color(0x0C, 0x0C, 0x0C, 0xE5));
 
     /// <summary>
     /// Radius of the inner area where a preview of the current selection is displayed.
     /// </summary>
-    public float InnerRadius { get; set; } = 300;
+    public float InnerRadius { get; set; } = 80;
 
     /// <summary>
     /// Background color of the outer area where menu items appear.
     /// </summary>
-    public HexColor OuterBackgroundColor { get; set; } = new(new Color(0.91f, 0.73f, 0.49f, 0.9f));
+    public HexColor OuterBackgroundColor { get; set; } = new(new Color(0xE8, 0xBA, 0x7C, 0xE5));
 
     /// <summary>
     /// Radius of the outer area where menu items appear.
@@ -40,7 +40,7 @@ public class Styles : IConfigEquatable<Styles>
     /// than the configured <see cref="SelectionSpriteHeight"/>.
     /// </para>
     /// </remarks>
-    public float OuterRadius { get; set; } = 110;
+    public float OuterRadius { get; set; } = 80;
 
     /// <summary>
     /// Contextual background color for the part of the outer menu that matches the player's current
@@ -48,14 +48,14 @@ public class Styles : IConfigEquatable<Styles>
     /// This is not an overlay color, the selection color completely replaces the
     /// <see cref="OuterBackgroundColor"/> for that slice.
     /// </summary>
-    public HexColor SelectionColor { get; set; } = new(new Color(0.85f, 0.55f, 0.15f, 0.9f));
+    public HexColor SelectionColor { get; set; } = new(new Color(0xD8, 0x8C, 0x26, 0xE5));
 
     /// <summary>
     /// Contextual background color for the part of the outer menu that is highlighted (focused).
     /// This is not an overlay color, the highlight completely replaces the
     /// <see cref="OuterBackgroundColor"/> for that slice.
     /// </summary>
-    public HexColor HighlightColor { get; set; } = new(Color.RoyalBlue);
+    public HexColor HighlightColor { get; set; } = new(new Color(0x41, 0x69, 0xE1));
 
     /// <summary>
     /// Empty space between the inner circle and outer ring.
@@ -64,7 +64,7 @@ public class Styles : IConfigEquatable<Styles>
     /// The gap is not required for correct display; it is an aesthetic choice and can be removed
     /// entirely (set to <c>0</c>) if desired.
     /// </remarks>
-    public float GapWidth { get; set; } = 8;
+    public float GapWidth { get; set; } = 0;
 
     /// <summary>
     /// Suggested height of a sprite (icon) within the menu ring.
@@ -73,7 +73,7 @@ public class Styles : IConfigEquatable<Styles>
     /// Most sprites will typically be drawn with exactly this height; however, the height may be
     /// reduced in order to fit some sprites with very wide aspect ratios.
     /// </remarks>
-    public int MenuSpriteHeight { get; set; } = 64;
+    public int MenuSpriteHeight { get; set; } = 48;
 
     /// <summary>
     /// Text color for the stack size displayed for stackable items. Generally applicable to the
@@ -99,12 +99,12 @@ public class Styles : IConfigEquatable<Styles>
     /// This is the height of the cursor when it is facing straight up. If the cursor is drawn as a
     /// simple triangle, it is the distance from base to tip.
     /// </remarks>
-    public float CursorSize { get; set; } = 32;
+    public float CursorSize { get; set; } = 12;
 
     /// <summary>
     /// Fill color for the cursor indicating the thumbstick angle.
     /// </summary>
-    public HexColor CursorColor { get; set; } = new(Color.LightGray);
+    public HexColor CursorColor { get; set; } = new(new Color(0xD3, 0xD3, 0xD3));
 
     /// <summary>
     /// Height of the zoomed-in sprite displayed in the selection preview (inner circle). Typically
@@ -115,7 +115,7 @@ public class Styles : IConfigEquatable<Styles>
     /// preview area is assumed to have plenty of space to accommodate larger sprites, and therefore
     /// there are no explicit wideness checks.
     /// </remarks>
-    public int SelectionSpriteHeight { get; set; } = 128;
+    public int SelectionSpriteHeight { get; set; } = 32;
 
     /// <summary>
     /// Color of the large title text displayed in the selection preview.
@@ -123,10 +123,70 @@ public class Styles : IConfigEquatable<Styles>
     public HexColor SelectionTitleColor { get; set; } = new(Color.White);
 
     /// <summary>
+    /// Scale multiplier for the item name text in the selection preview.
+    /// </summary>
+    public float SelectionTitleScale { get; set; } = 1f;
+
+    /// <summary>
+    /// Shadow color for the item name text in the selection preview.
+    /// </summary>
+    public HexColor SelectionTitleShadowColor { get; set; } = new(Color.Black);
+
+    /// <summary>
+    /// Opacity for the item name text shadow in the selection preview.
+    /// </summary>
+    public float SelectionTitleShadowAlpha { get; set; } = 0.5f;
+
+    /// <summary>
+    /// Pixel offset for the item name text shadow in the selection preview.
+    /// </summary>
+    public Vector2 SelectionTitleShadowOffset { get; set; } = new(-1f, 1f);
+
+    /// <summary>
+    /// Whether to display the selected item's icon in the preview.
+    /// </summary>
+    public bool ShowSelectionIcon { get; set; } = true;
+
+    /// <summary>
+    /// Whether to display the selected item's name in the preview.
+    /// </summary>
+    public bool ShowSelectionTitle { get; set; } = true;
+
+    /// <summary>
     /// Color of the smaller description text displayed underneath the title in the selection
     /// preview.
     /// </summary>
-    public HexColor SelectionDescriptionColor { get; set; } = new(Color.LightGray);
+    public HexColor SelectionDescriptionColor { get; set; } = new(Color.White);
+
+    /// <summary>
+    /// Scale multiplier for the item description text in the selection preview.
+    /// </summary>
+    public float SelectionDescriptionScale { get; set; } = 1f;
+
+    /// <summary>
+    /// Whether to display the selected item's description in the preview.
+    /// </summary>
+    public bool ShowSelectionDescription { get; set; } = false;
+
+    /// <summary>
+    /// Vertical offset for the radial menu relative to the viewport height.
+    /// </summary>
+    public float MenuVerticalOffset { get; set; } = 0.3f;
+
+    /// <summary>
+    /// Horizontal offset for the radial menu relative to the viewport width.
+    /// </summary>
+    public float MenuHorizontalOffset { get; set; } = 0.0f;
+
+    /// <summary>
+    /// Whether to show the quick action menus while a radial menu is open.
+    /// </summary>
+    public bool ShowQuickActions { get; set; } = true;
+
+    /// <summary>
+    /// Scale multiplier for the quick action menus.
+    /// </summary>
+    public float QuickActionScale { get; set; } = 0.7f;
 
     /// <inheritdoc />
     public bool Equals(Styles? other)
@@ -153,6 +213,18 @@ public class Styles : IConfigEquatable<Styles>
             && CursorColor.Equals(other.CursorColor)
             && SelectionSpriteHeight == other.SelectionSpriteHeight
             && SelectionTitleColor.Equals(other.SelectionTitleColor)
-            && SelectionDescriptionColor.Equals(other.SelectionDescriptionColor);
+            && SelectionTitleShadowColor.Equals(other.SelectionTitleShadowColor)
+            && SelectionTitleShadowAlpha.Equals(other.SelectionTitleShadowAlpha)
+            && SelectionTitleShadowOffset.Equals(other.SelectionTitleShadowOffset)
+            && SelectionTitleScale.Equals(other.SelectionTitleScale)
+            && SelectionDescriptionColor.Equals(other.SelectionDescriptionColor)
+            && SelectionDescriptionScale.Equals(other.SelectionDescriptionScale)
+            && ShowSelectionIcon == other.ShowSelectionIcon
+            && ShowSelectionTitle == other.ShowSelectionTitle
+            && ShowSelectionDescription == other.ShowSelectionDescription
+            && MenuVerticalOffset.Equals(other.MenuVerticalOffset)
+            && MenuHorizontalOffset.Equals(other.MenuHorizontalOffset)
+            && ShowQuickActions == other.ShowQuickActions
+            && QuickActionScale.Equals(other.QuickActionScale);
     }
 }
