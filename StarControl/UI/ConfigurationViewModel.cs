@@ -17,7 +17,7 @@ internal partial class ConfigurationViewModel : IDisposable
     private const int PreviewMaxSize = 500;
     private const int PreviewMinSize = 240;
     private const int PreviewHorizontalPadding = 80;
-    private const float MenuSlideDurationMs = 200f;
+    private const float MenuSlideDurationMs = 220f;
     private const int MenuVerticalNudge = -24;
 
     public static event EventHandler<EventArgs>? Saved;
@@ -53,14 +53,14 @@ internal partial class ConfigurationViewModel : IDisposable
     [Notify]
     private bool isPreviewVisible;
 
-    private float menuOffsetX;
-    private double lastMenuPositionUpdateMs;
-
     private readonly ModConfig config;
     private readonly IModHelper helper;
 
     private int loadingFrameCount;
     private int loadingPageIndex = 1;
+    private float menuPositionX;
+    private double lastMenuPositionUpdateMs;
+    private bool menuPositionInitialized;
 
     public int MenuWidth { get; private set; } = BaseMenuWidth;
     public int MenuHeight { get; private set; } = BaseMenuHeight;
@@ -157,30 +157,22 @@ internal partial class ConfigurationViewModel : IDisposable
     public Point GetMenuPosition()
     {
         var viewport = Game1.uiViewport;
-        var baseMenuWidth = MenuWidth;
-        var previewWidth = IsPreviewEnabled ? PreviewWidth + PreviewHorizontalPadding : 0;
-        var centeredX = (viewport.Width - baseMenuWidth) / 2f;
-        var previewX = (viewport.Width - (baseMenuWidth + previewWidth)) / 2f;
-        var targetX = IsPreviewVisible ? previewX : centeredX;
-        var nowMs = Game1.currentGameTime?.TotalGameTime.TotalMilliseconds ?? 0;
-        if (lastMenuPositionUpdateMs == 0)
+        var targetX = GetTargetMenuX(viewport);
+        if (!menuPositionInitialized)
         {
-            menuOffsetX = targetX;
+            menuPositionX = targetX;
+            menuPositionInitialized = true;
+            lastMenuPositionUpdateMs = Game1.currentGameTime?.TotalGameTime.TotalMilliseconds ?? 0;
         }
-        else if (nowMs > lastMenuPositionUpdateMs)
-        {
-            var deltaMs = (float)(nowMs - lastMenuPositionUpdateMs);
-            var t = Math.Min(1f, deltaMs / MenuSlideDurationMs);
-            menuOffsetX = menuOffsetX + (targetX - menuOffsetX) * t;
-        }
-        else
-        {
-            menuOffsetX = targetX;
-        }
-        lastMenuPositionUpdateMs = nowMs;
-        var x = (int)MathF.Round(menuOffsetX);
         var y = (viewport.Height - MenuHeight) / 2 + MenuVerticalNudge;
-        return new Point(Math.Max(0, x), Math.Max(0, y));
+        return new Point(Math.Max(0, (int)MathF.Round(menuPositionX)), Math.Max(0, y));
+    }
+
+    public void InitializeMenuPosition()
+    {
+        menuPositionInitialized = false;
+        lastMenuPositionUpdateMs = 0;
+        UpdateMenuPosition();
     }
 
     public void Reload()
@@ -220,6 +212,7 @@ internal partial class ConfigurationViewModel : IDisposable
 
     public void Update()
     {
+        UpdateMenuPosition();
         if (loadingPageIndex >= Pager.Pages.Count)
         {
             return;
@@ -298,6 +291,7 @@ internal partial class ConfigurationViewModel : IDisposable
         if (e.PropertyName == nameof(Pager.SelectedPageIndex))
         {
             UpdatePreviewVisibility();
+            UpdateMenuPosition();
         }
     }
 
@@ -326,11 +320,51 @@ internal partial class ConfigurationViewModel : IDisposable
         PreviewLayout = $"{previewSize}px";
         IsPreviewEnabled = previewSize >= PreviewMinSize && availablePreviewWidth >= PreviewMinSize;
         UpdatePreviewVisibility();
+        UpdateMenuPosition();
     }
 
     private void UpdatePreviewVisibility()
     {
         IsPreviewVisible = IsPreviewEnabled && Pager.SelectedPageIndex == 1; // Styles
+    }
+
+    private float GetTargetMenuX(xTile.Dimensions.Rectangle viewport)
+    {
+        var previewWidth =
+            IsPreviewEnabled && IsPreviewVisible ? PreviewWidth + PreviewHorizontalPadding : 0;
+        return (viewport.Width - (MenuWidth + previewWidth)) / 2f;
+    }
+
+    private void UpdateMenuPosition()
+    {
+        if (Controller?.Menu is null)
+        {
+            return;
+        }
+        var viewport = Game1.uiViewport;
+        var targetX = GetTargetMenuX(viewport);
+        var nowMs = Game1.currentGameTime?.TotalGameTime.TotalMilliseconds ?? 0;
+        if (!menuPositionInitialized)
+        {
+            menuPositionX = targetX;
+            menuPositionInitialized = true;
+        }
+        else if (lastMenuPositionUpdateMs > 0 && nowMs > lastMenuPositionUpdateMs)
+        {
+            var deltaMs = (float)(nowMs - lastMenuPositionUpdateMs);
+            var t = Math.Min(1f, deltaMs / MenuSlideDurationMs);
+            menuPositionX = menuPositionX + (targetX - menuPositionX) * t;
+        }
+        else
+        {
+            menuPositionX = targetX;
+        }
+        lastMenuPositionUpdateMs = nowMs;
+        Controller.Menu.xPositionOnScreen = Math.Max(0, (int)MathF.Round(menuPositionX));
+        Controller.Menu.yPositionOnScreen = Math.Max(
+            0,
+            (viewport.Height - MenuHeight) / 2 + MenuVerticalNudge
+        );
     }
 
     private void SaveSections(ModConfig config)

@@ -10,6 +10,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - Config menu now centers on most tabs and slides left on the Style tab to make room for the preview
 
+### Fixed
+
+- Config menu position flicker when opening the menu
+
 ---
 
 ## [1.1.3] - 2025-12-22
