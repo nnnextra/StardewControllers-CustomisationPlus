@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.3] - 2025-12-22
+
+### Added
+
+- Separate thumbstick navigation options for the item wheel and mod wheel
+- Added a "Both" thumbstick option for wheel navigation
+- Backward-compatible binding so older config layouts still show a navigation selector
+
+### Changed
+
+- Improved controller cursor behavior after closing a wheel (suppresses flicker and unwanted movement)
+- Reset mouse position to the player when opening/closing the wheel
+
+---
+
 ## [1.1.2] - 2025-12-22
 
 ### Added

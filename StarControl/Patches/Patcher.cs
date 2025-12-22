@@ -1,4 +1,5 @@
 using HarmonyLib;
+using StardewValley;
 using StardewValley.Menus;
 using StardewValley.Tools;
 
@@ -41,6 +42,30 @@ internal static class Patcher
             "drawHUD",
             prefix: new(typeof(GamePatches), nameof(GamePatches.DrawHud_Prefix)),
             postfix: new(typeof(GamePatches), nameof(GamePatches.DrawHud_Postfix))
+        );
+        TryPatch(
+            harmony,
+            typeof(Game1),
+            "shouldDrawMouseCursor",
+            postfix: new(typeof(InputPatches), nameof(InputPatches.ShouldDrawMouseCursor_Postfix))
+        );
+        TryPatch(
+            harmony,
+            typeof(Game1),
+            "drawMouseCursor",
+            prefix: new(typeof(InputPatches), nameof(InputPatches.DrawMouseCursor_Prefix))
+        );
+        TryPatch(
+            harmony,
+            typeof(Game1),
+            "drawMouseCursorIgnoreAction",
+            prefix: new(typeof(InputPatches), nameof(InputPatches.DrawMouseCursor_Prefix))
+        );
+        TryPatch(
+            harmony,
+            typeof(InputState),
+            nameof(InputState.GetGamePadState),
+            postfix: new(typeof(InputPatches), nameof(InputPatches.GetGamePadState_Postfix))
         );
         TryPatch(
             harmony,

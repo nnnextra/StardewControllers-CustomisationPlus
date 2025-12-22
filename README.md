@@ -16,6 +16,7 @@ Screenshot from 1280 x 800 resolution display (Steam Deck native resolution)
 - Quick action visibility toggle and size slider
 - Config menu fits on smaller screens with scrollable pages
 - Preserves vanilla health/stamina/time HUD while hiding only the toolbar
+- Dual-stick navigation options with improved cursor behavior after wheel close
 
 Original README below:
 

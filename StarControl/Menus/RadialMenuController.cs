@@ -4,6 +4,8 @@ using Microsoft.Xna.Framework.Graphics;
 using StarControl.Config;
 using StarControl.Graphics;
 using StarControl.Input;
+using StarControl.Patches;
+using StardewValley;
 using StardewValley.Menus;
 
 namespace StarControl.Menus;
@@ -59,6 +61,7 @@ internal class RadialMenuController(
     private float menuOpenTimeMs;
     private float menuScale;
     private float quickSlotOpacity;
+    private bool usedRightStickInMenu;
     private bool? previousDisplayHud;
     private Toolbar? hiddenToolbar;
 
@@ -161,6 +164,7 @@ internal class RadialMenuController(
             activeMenu = menu;
             if (previousActiveMenu is null && activeMenu is not null)
             {
+                ResetMouseToPlayer();
                 AnimateMenuOpen(elapsed); // Skip "zero" frame
             }
         }
@@ -284,18 +288,25 @@ internal class RadialMenuController(
         {
             return false;
         }
-        var stickButton = config.Input.ThumbStickPreference switch
-        {
-            ThumbStickPreference.AlwaysLeft => SButton.LeftStick,
-            ThumbStickPreference.AlwaysRight => SButton.RightStick,
-            _ => activeMenu.Toggle.IsRightSided() ? SButton.RightStick : SButton.LeftStick,
-        };
-        var result = SuppressIfPressed(stickButton);
+        var preference = GetThumbStickPreference(activeMenu);
+        var result =
+            preference == ThumbStickPreference.Both
+                ? SuppressIfPressed(SButton.LeftStick) || SuppressIfPressed(SButton.RightStick)
+                : SuppressIfPressed(
+                    preference switch
+                    {
+                        ThumbStickPreference.AlwaysLeft => SButton.LeftStick,
+                        ThumbStickPreference.AlwaysRight => SButton.RightStick,
+                        _ => activeMenu.Toggle.IsRightSided()
+                            ? SButton.RightStick
+                            : SButton.LeftStick,
+                    }
+                );
         if (result)
         {
             Logger.Log(
                 LogCategory.Input,
-                $"Detected thumbstick activation on {stickButton}, "
+                $"Detected thumbstick activation (preference = {preference}), "
                     + $"secondary action = {secondaryAction}."
             );
         }
@@ -323,6 +334,12 @@ internal class RadialMenuController(
         focusedItem = null;
         cursorAngle = null;
         RestoreHudState();
+        if (usedRightStickInMenu)
+        {
+            ResetMouseToPlayer();
+            InputPatches.SuppressRightStickFor(InputPatches.RightStickSuppressionDuration);
+        }
+        usedRightStickInMenu = false;
         if (fromActivation)
         {
             if (!config.Input.ReopenOnHold)
@@ -575,12 +592,31 @@ internal class RadialMenuController(
     private void UpdateFocus(IRadialMenu menu)
     {
         var thumbsticks = Game1.input.GetGamePadState().ThumbSticks;
-        var position = config.Input.ThumbStickPreference switch
+        var preference = GetThumbStickPreference(menu);
+        var position = preference switch
         {
             ThumbStickPreference.AlwaysLeft => thumbsticks.Left,
             ThumbStickPreference.AlwaysRight => thumbsticks.Right,
+            ThumbStickPreference.Both => SelectThumbstick(thumbsticks.Left, thumbsticks.Right),
             _ => menu.Toggle.IsRightSided() ? thumbsticks.Right : thumbsticks.Left,
         };
+        if (
+            preference == ThumbStickPreference.AlwaysRight
+            || (preference == ThumbStickPreference.SameAsTrigger && menu.Toggle.IsRightSided())
+        )
+        {
+            if (position.Length() > config.Input.ThumbstickDeadZone)
+            {
+                usedRightStickInMenu = true;
+            }
+        }
+        if (preference == ThumbStickPreference.Both)
+        {
+            if (thumbsticks.Right.Length() > config.Input.ThumbstickDeadZone)
+            {
+                usedRightStickInMenu = true;
+            }
+        }
         float? angle =
             position.Length() > config.Input.ThumbstickDeadZone
                 ? MathF.Atan2(position.X, position.Y)
@@ -608,5 +644,35 @@ internal class RadialMenuController(
             focusedIndex = -1;
             focusedItem = null;
         }
+    }
+
+    private ThumbStickPreference GetThumbStickPreference(IRadialMenu menu)
+    {
+        return menu switch
+        {
+            InventoryMenu => config.Input.InventoryThumbStickPreference,
+            ModMenu => config.Input.ModMenuThumbStickPreference,
+            _ => config.Input.ThumbStickPreference,
+        };
+    }
+
+    private Vector2 SelectThumbstick(Vector2 left, Vector2 right)
+    {
+        var leftLen = left.Length();
+        var rightLen = right.Length();
+        if (rightLen > leftLen)
+        {
+            return right;
+        }
+        return left;
+    }
+
+    private static void ResetMouseToPlayer()
+    {
+        var playerPos = Game1.player?.getStandingPosition() ?? Vector2.Zero;
+        var viewport = Game1.viewport;
+        var cursorX = (int)(playerPos.X - viewport.X);
+        var cursorY = (int)(playerPos.Y - viewport.Y);
+        Game1.setMousePosition(cursorX, cursorY);
     }
 }

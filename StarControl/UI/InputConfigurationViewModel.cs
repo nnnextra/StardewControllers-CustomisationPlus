@@ -8,9 +8,28 @@ internal partial class InputConfigurationViewModel
     public EnumSegmentsViewModel<DelayedActions> DelayedActions { get; } = new();
     public Func<float, string> FormatActivationDelay { get; } = v => $"{v:f0} ms";
     public Func<float, string> FormatDeadZone { get; } = v => v.ToString("f2");
+    public EnumSegmentsViewModel<ThumbStickPreference> InventoryThumbStickPreference { get; } =
+        new(
+            new[]
+            {
+                global::StarControl.Config.ThumbStickPreference.AlwaysLeft,
+                global::StarControl.Config.ThumbStickPreference.AlwaysRight,
+                global::StarControl.Config.ThumbStickPreference.Both,
+            }
+        );
+    public EnumSegmentsViewModel<ThumbStickPreference> ModMenuThumbStickPreference { get; } =
+        new(
+            new[]
+            {
+                global::StarControl.Config.ThumbStickPreference.AlwaysLeft,
+                global::StarControl.Config.ThumbStickPreference.AlwaysRight,
+                global::StarControl.Config.ThumbStickPreference.Both,
+            }
+        );
+    public EnumSegmentsViewModel<ThumbStickPreference> ThumbStickPreference =>
+        InventoryThumbStickPreference;
     public EnumSegmentsViewModel<ItemActivationMethod> PrimaryActivationMethod { get; } = new();
     public EnumSegmentsViewModel<ItemActivationMethod> SecondaryActivationMethod { get; } = new();
-    public EnumSegmentsViewModel<ThumbStickPreference> ThumbStickPreference { get; } = new();
     public EnumSegmentsViewModel<MenuToggleMode> ToggleMode { get; } = new();
 
     [Notify]
@@ -82,7 +101,8 @@ internal partial class InputConfigurationViewModel
         PrimaryActivationMethod.SelectedValue = config.PrimaryActivationMethod;
         SecondaryActionButton = config.SecondaryActionButton;
         SecondaryActivationMethod.SelectedValue = config.SecondaryActivationMethod;
-        ThumbStickPreference.SelectedValue = config.ThumbStickPreference;
+        InventoryThumbStickPreference.SelectedValue = config.InventoryThumbStickPreference;
+        ModMenuThumbStickPreference.SelectedValue = config.ModMenuThumbStickPreference;
         ToggleMode.SelectedValue = config.ToggleMode;
         RemappingMenuButton = config.RemappingMenuButton;
         remappingHudButton = config.RemappingHudButton;
@@ -115,7 +135,9 @@ internal partial class InputConfigurationViewModel
         config.PrimaryActivationMethod = PrimaryActivationMethod.SelectedValue;
         config.SecondaryActionButton = SecondaryActionButton;
         config.SecondaryActivationMethod = SecondaryActivationMethod.SelectedValue;
-        config.ThumbStickPreference = ThumbStickPreference.SelectedValue;
+        config.InventoryThumbStickPreference = InventoryThumbStickPreference.SelectedValue;
+        config.ModMenuThumbStickPreference = ModMenuThumbStickPreference.SelectedValue;
+        config.ThumbStickPreference = InventoryThumbStickPreference.SelectedValue;
         config.ToggleMode = ToggleMode.SelectedValue;
         config.RemappingMenuButton = RemappingMenuButton;
         config.RemappingHudButton = remappingHudButton;

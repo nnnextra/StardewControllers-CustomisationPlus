@@ -9,6 +9,11 @@ namespace StarControl.Patches;
 internal static class InputPatches
 {
     public static Buttons? ToolUseButton { get; set; }
+    public static TimeSpan RightStickSuppressionDuration { get; set; } = TimeSpan.FromSeconds(0.5);
+
+    private static double rightStickSuppressUntilMs;
+    private static bool rightStickCursorAwaitingMove;
+    private static double rightStickCursorAwaitMoveAfterMs;
 
     private static readonly FieldInfo GameInputField = AccessTools.Field(
         typeof(Game1),
@@ -98,6 +103,71 @@ internal static class InputPatches
                 : new();
         RemapGamePadState(ref gamepadState, rawState);
         return gamepadState;
+    }
+
+    public static void SuppressRightStickFor(TimeSpan duration)
+    {
+        if (duration <= TimeSpan.Zero)
+        {
+            return;
+        }
+        var nowMs = Game1.currentGameTime?.TotalGameTime.TotalMilliseconds ?? 0;
+        rightStickSuppressUntilMs = Math.Max(
+            rightStickSuppressUntilMs,
+            nowMs + duration.TotalMilliseconds
+        );
+        rightStickCursorAwaitingMove = true;
+        rightStickCursorAwaitMoveAfterMs = Math.Max(
+            rightStickCursorAwaitMoveAfterMs,
+            rightStickSuppressUntilMs
+        );
+    }
+
+    public static void GetGamePadState_Postfix(ref GamePadState __result)
+    {
+        var nowMs = Game1.currentGameTime?.TotalGameTime.TotalMilliseconds ?? 0;
+        if (
+            rightStickCursorAwaitingMove
+            && nowMs >= rightStickCursorAwaitMoveAfterMs
+            && __result.ThumbSticks.Right.Length() > 0.1f
+        )
+        {
+            rightStickCursorAwaitingMove = false;
+        }
+        if (!IsRightStickSuppressed())
+        {
+            return;
+        }
+        var sticks = __result.ThumbSticks;
+        if (sticks.Right == Vector2.Zero)
+        {
+            return;
+        }
+        __result = new GamePadState(
+            new GamePadThumbSticks(sticks.Left, Vector2.Zero),
+            __result.Triggers,
+            __result.Buttons,
+            __result.DPad
+        );
+    }
+
+    public static void ShouldDrawMouseCursor_Postfix(ref bool __result)
+    {
+        if (rightStickCursorAwaitingMove || IsRightStickSuppressed())
+        {
+            __result = false;
+        }
+    }
+
+    public static bool DrawMouseCursor_Prefix()
+    {
+        return !rightStickCursorAwaitingMove && !IsRightStickSuppressed();
+    }
+
+    private static bool IsRightStickSuppressed()
+    {
+        var nowMs = Game1.currentGameTime?.TotalGameTime.TotalMilliseconds ?? 0;
+        return nowMs > 0 && nowMs < rightStickSuppressUntilMs;
     }
 
     private static GamePadState GetRemappedOldPadState()

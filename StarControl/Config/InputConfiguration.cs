@@ -56,6 +56,18 @@ public class InputConfiguration : IConfigEquatable<InputConfiguration>
         ThumbStickPreference.AlwaysLeft;
 
     /// <summary>
+    /// Selects which thumbstick is used to navigate the inventory wheel after opening.
+    /// </summary>
+    public ThumbStickPreference InventoryThumbStickPreference { get; set; } =
+        ThumbStickPreference.AlwaysLeft;
+
+    /// <summary>
+    /// Selects which thumbstick is used to navigate the mod wheel after opening.
+    /// </summary>
+    public ThumbStickPreference ModMenuThumbStickPreference { get; set; } =
+        ThumbStickPreference.AlwaysLeft;
+
+    /// <summary>
     /// Whether the <see cref="InventoryMenuButton"/> or <see cref="ModMenuButton"/> are used to
     /// hold the menu open (default) or toggle it on/off.
     /// </summary>
@@ -181,6 +193,8 @@ public class InputConfiguration : IConfigEquatable<InputConfiguration>
             && SecondaryActionButton == other.SecondaryActionButton
             && SecondaryActivationMethod == other.SecondaryActivationMethod
             && ThumbStickPreference == other.ThumbStickPreference
+            && InventoryThumbStickPreference == other.InventoryThumbStickPreference
+            && ModMenuThumbStickPreference == other.ModMenuThumbStickPreference
             && ToggleMode == other.ToggleMode
             && RemappingMenuButton == other.RemappingMenuButton
             && RemappingHudButton == other.RemappingHudButton
@@ -190,5 +204,24 @@ public class InputConfiguration : IConfigEquatable<InputConfiguration>
             && RememberSelection == other.RememberSelection
             && TriggerDeadZone.Equals(other.TriggerDeadZone)
             && ThumbstickDeadZone.Equals(other.ThumbstickDeadZone);
+    }
+
+    public void ApplyLegacyThumbStickPreference()
+    {
+        if (ThumbStickPreference == ThumbStickPreference.SameAsTrigger)
+        {
+            InventoryThumbStickPreference = ThumbStickPreference.AlwaysLeft;
+            ModMenuThumbStickPreference = ThumbStickPreference.AlwaysRight;
+            return;
+        }
+        if (
+            InventoryThumbStickPreference == ThumbStickPreference.AlwaysLeft
+            && ModMenuThumbStickPreference == ThumbStickPreference.AlwaysLeft
+            && ThumbStickPreference != ThumbStickPreference.AlwaysLeft
+        )
+        {
+            InventoryThumbStickPreference = ThumbStickPreference;
+            ModMenuThumbStickPreference = ThumbStickPreference;
+        }
     }
 }

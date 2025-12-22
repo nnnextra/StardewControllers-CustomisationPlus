@@ -9,7 +9,7 @@ namespace StarControl.UI;
 /// <typeparam name="T">Type of enum.</typeparam>
 /// <param name="translations">The translation helper for retrieving enum display names and
 /// descriptions.</param>
-public partial class EnumSegmentsViewModel<T>() : INotifyPropertyChanged
+public partial class EnumSegmentsViewModel<T> : INotifyPropertyChanged
     where T : struct, Enum
 {
     /// <summary>
@@ -18,22 +18,20 @@ public partial class EnumSegmentsViewModel<T>() : INotifyPropertyChanged
     public event EventHandler? ValueChanged;
 
     private static readonly T[] AllValues = Enum.GetValues<T>();
+    private readonly T[] values;
 
     /// <summary>
     /// List of all segments, one per enum value.
     /// </summary>
-    public IReadOnlyList<Segment> Segments { get; } =
-        AllValues
-            .Select((v, i) => new Segment(v, GetName(v), GetDescription(v)) { Selected = i == 0 })
-            .ToList();
+    public IReadOnlyList<Segment> Segments { get; }
 
     /// <summary>
     /// The enum value that is currently selected.
     /// </summary>
     public T SelectedValue
     {
-        get => AllValues[SelectedIndex];
-        set => SelectedIndex = Array.IndexOf(AllValues, value);
+        get => values[SelectedIndex];
+        set => SelectedIndex = Array.IndexOf(values, value);
     }
 
     /// <summary>
@@ -57,6 +55,14 @@ public partial class EnumSegmentsViewModel<T>() : INotifyPropertyChanged
         Segments[oldValue].Selected = false;
         Segments[newValue].Selected = true;
         ValueChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    public EnumSegmentsViewModel(IEnumerable<T>? allowedValues = null)
+    {
+        values = (allowedValues ?? AllValues).Distinct().ToArray();
+        Segments = values
+            .Select((v, i) => new Segment(v, GetName(v), GetDescription(v)) { Selected = i == 0 })
+            .ToList();
     }
 
     /// <summary>

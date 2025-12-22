@@ -27,4 +27,9 @@ public enum ThumbStickPreference
     /// Use the thumbstick that is on the same side as the trigger button used to open the menu.
     /// </summary>
     SameAsTrigger,
+
+    /// <summary>
+    /// Allow either thumbstick to control the menu.
+    /// </summary>
+    Both,
 };

@@ -45,6 +45,7 @@ public class ModEntry : Mod
     {
         Logger.Monitor = Monitor;
         config = Helper.ReadConfig<ModConfig>();
+        config.Input.ApplyLegacyThumbStickPreference();
         Logger.Config = config.Debug;
         I18n.Init(helper.Translation);
         var builtInItems = new BuiltInItems(ModManifest);

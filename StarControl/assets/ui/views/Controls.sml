@@ -43,8 +43,13 @@
     <form-row title={#Config.Selection.ToggleMode.Title} description={#Config.Selection.ToggleMode.Description}>
         <enum-segments *context={:ToggleMode} />
     </form-row>
-    <form-row title={#Config.Keybind.Navigation.Title} description={#Config.Keybind.Navigation.Description}>
-        <enum-segments *context={:ThumbStickPreference} />
+    <form-row title={#Config.Keybind.InventoryNavigation.Title}
+              description={#Config.Keybind.InventoryNavigation.Description}>
+        <enum-segments *context={:InventoryThumbStickPreference} />
+    </form-row>
+    <form-row title={#Config.Keybind.ModNavigation.Title}
+              description={#Config.Keybind.ModNavigation.Description}>
+        <enum-segments *context={:ModMenuThumbStickPreference} />
     </form-row>
     <form-row title={#Config.Selection.DelayedActions.Title}
               description={#Config.Selection.DelayedActions.Description}>
