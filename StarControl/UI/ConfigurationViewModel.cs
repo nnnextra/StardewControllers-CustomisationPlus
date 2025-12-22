@@ -17,6 +17,7 @@ internal partial class ConfigurationViewModel : IDisposable
     private const int PreviewMaxSize = 500;
     private const int PreviewMinSize = 240;
     private const int PreviewHorizontalPadding = 80;
+    private const float MenuSlideDurationMs = 200f;
     private const int MenuVerticalNudge = -24;
 
     public static event EventHandler<EventArgs>? Saved;
@@ -51,6 +52,9 @@ internal partial class ConfigurationViewModel : IDisposable
 
     [Notify]
     private bool isPreviewVisible;
+
+    private float menuOffsetX;
+    private double lastMenuPositionUpdateMs;
 
     private readonly ModConfig config;
     private readonly IModHelper helper;
@@ -153,10 +157,28 @@ internal partial class ConfigurationViewModel : IDisposable
     public Point GetMenuPosition()
     {
         var viewport = Game1.uiViewport;
-        var combinedWidth = IsPreviewEnabled
-            ? MenuWidth + PreviewWidth + PreviewHorizontalPadding
-            : MenuWidth;
-        var x = (viewport.Width - combinedWidth) / 2;
+        var baseMenuWidth = MenuWidth;
+        var previewWidth = IsPreviewEnabled ? PreviewWidth + PreviewHorizontalPadding : 0;
+        var centeredX = (viewport.Width - baseMenuWidth) / 2f;
+        var previewX = (viewport.Width - (baseMenuWidth + previewWidth)) / 2f;
+        var targetX = IsPreviewVisible ? previewX : centeredX;
+        var nowMs = Game1.currentGameTime?.TotalGameTime.TotalMilliseconds ?? 0;
+        if (lastMenuPositionUpdateMs == 0)
+        {
+            menuOffsetX = targetX;
+        }
+        else if (nowMs > lastMenuPositionUpdateMs)
+        {
+            var deltaMs = (float)(nowMs - lastMenuPositionUpdateMs);
+            var t = Math.Min(1f, deltaMs / MenuSlideDurationMs);
+            menuOffsetX = menuOffsetX + (targetX - menuOffsetX) * t;
+        }
+        else
+        {
+            menuOffsetX = targetX;
+        }
+        lastMenuPositionUpdateMs = nowMs;
+        var x = (int)MathF.Round(menuOffsetX);
         var y = (viewport.Height - MenuHeight) / 2 + MenuVerticalNudge;
         return new Point(Math.Max(0, x), Math.Max(0, y));
     }

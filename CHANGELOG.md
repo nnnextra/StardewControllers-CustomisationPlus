@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.4] - 2025-12-22
+
+### Changed
+
+- Config menu now centers on most tabs and slides left on the Style tab to make room for the preview
+
+---
+
 ## [1.1.3] - 2025-12-22
 
 ### Added
