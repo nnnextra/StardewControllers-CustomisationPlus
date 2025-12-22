@@ -17,7 +17,7 @@ internal partial class ConfigurationViewModel : IDisposable
     private const int PreviewMaxSize = 500;
     private const int PreviewMinSize = 240;
     private const int PreviewHorizontalPadding = 80;
-    private const float MenuSlideDurationMs = 220f;
+    private const float MenuSlideDurationMs = 450f;
     private const int MenuVerticalNudge = -24;
 
     public static event EventHandler<EventArgs>? Saved;
@@ -59,6 +59,10 @@ internal partial class ConfigurationViewModel : IDisposable
     private int loadingFrameCount;
     private int loadingPageIndex = 1;
     private float menuPositionX;
+    private float slideStartX;
+    private float slideTargetX;
+    private double slideStartMs;
+    private bool isSliding;
     private double lastMenuPositionUpdateMs;
     private bool menuPositionInitialized;
 
@@ -328,6 +332,20 @@ internal partial class ConfigurationViewModel : IDisposable
         IsPreviewVisible = IsPreviewEnabled && Pager.SelectedPageIndex == 1; // Styles
     }
 
+    private void StartMenuSlide(float targetX, double nowMs)
+    {
+        slideStartX = menuPositionX;
+        slideTargetX = targetX;
+        slideStartMs = nowMs;
+        isSliding = true;
+    }
+
+    private static float EaseOutCubic(float t)
+    {
+        var oneMinusT = 1f - t;
+        return 1f - (oneMinusT * oneMinusT * oneMinusT);
+    }
+
     private float GetTargetMenuX(xTile.Dimensions.Rectangle viewport)
     {
         var previewWidth =
@@ -347,17 +365,30 @@ internal partial class ConfigurationViewModel : IDisposable
         if (!menuPositionInitialized)
         {
             menuPositionX = targetX;
+            slideStartX = targetX;
+            slideTargetX = targetX;
+            slideStartMs = nowMs;
+            isSliding = false;
             menuPositionInitialized = true;
-        }
-        else if (lastMenuPositionUpdateMs > 0 && nowMs > lastMenuPositionUpdateMs)
-        {
-            var deltaMs = (float)(nowMs - lastMenuPositionUpdateMs);
-            var t = Math.Min(1f, deltaMs / MenuSlideDurationMs);
-            menuPositionX = menuPositionX + (targetX - menuPositionX) * t;
         }
         else
         {
-            menuPositionX = targetX;
+            if (!isSliding && Math.Abs(targetX - menuPositionX) > 0.5f)
+            {
+                StartMenuSlide(targetX, nowMs);
+            }
+            if (isSliding)
+            {
+                var elapsedMs = (float)(nowMs - slideStartMs);
+                var t = Math.Min(1f, elapsedMs / MenuSlideDurationMs);
+                var eased = EaseOutCubic(t);
+                menuPositionX = slideStartX + (slideTargetX - slideStartX) * eased;
+                if (t >= 1f)
+                {
+                    menuPositionX = slideTargetX;
+                    isSliding = false;
+                }
+            }
         }
         lastMenuPositionUpdateMs = nowMs;
         Controller.Menu.xPositionOnScreen = Math.Max(0, (int)MathF.Round(menuPositionX));
