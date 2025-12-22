@@ -1,10 +1,10 @@
 {
   "$schema": "https://smapi.io/schemas/manifest.json",
-  "Name": "Star Control",
-  "Author": "focustense",
-  "Version": "1.0.1",
-  "Description": "Stardew controller framework with pie menus and button remapping",
-  "UniqueID": "focustense.StarControl",
+  "Name": "Star Control - CustomisationPlus",
+  "Author": "nnnextra (forked from focustense)",
+  "Version": "1.1.0",
+  "Description": "Stardew controller framework with pie menus and button remapping (Smaller radial menus version)",
+  "UniqueID": "nnnextra.StarControl",
   "EntryDll": "StarControl.dll",
   "Dependencies": [
     {
@@ -19,5 +19,5 @@
   ],
   "MinimumApiVersion": "4.1.10",
   "MinimumGameVersion": "1.6.15",
-  "UpdateKeys": [ "Nexus:25257", "GitHub:focustense/StardewControllers" ]
+  "UpdateKeys": [ "GitHub:nnnextra/StardewControllers-CustomisationPlus" ]
 }
