@@ -1,25 +1,22 @@
 # Star Control for Stardew Valley - CustomisationPlus
 
-This is a fork of focustense/StardewControllers with extra customisation including UI scaling and position adjustments to make the radial menus smaller and less intrusive, particularly on smaller screens such as the Steam Deck. On larger screens, the menus retain a more minimal appearance.
+This is a fork of focustense/StardewControllers focused on deeper customization and better small-screen usability. It adds extra controls for radial menu size, position, and preview layout; item label and description sizing and visibility; quick action visibility and size; and config UI tweaks so the menu fits comfortably on smaller displays like the Steam Deck while staying minimal on larger screens.
 
-This fork also includes a bug fix that resolves the inability to assign a Slingshot to a quick action button (and also works for bows from Swords & Sorcery).
+This fork also includes a bug fix that resolves the inability to assign a Slingshot to a quick action button (and also works for bows from Swords & Sorcery), plus UI polish like improved text scaling and preserving the vanilla health/stamina/time HUD while the toolbar hides.
 
 You must remove any previous versions of Star Control or Radial Menu before installing this mod.
 
 ![Full overlay screenshot](docs/images/screenshot-controller-overlay.png)
 Screenshot from 1280 x 800 resolution display (Steam Deck native resolution)
 
-## Upcoming changes
+## Highlights
 
-Implement config to allow changes to:
-- Position of radial menus on screen 
-- Full-screen background fade behind raidal menus
-- Highlighted item name and description font size
-- Size of quick action menus
-- Size of in-game Star Control config menu to fit better on smaller screens
+- Customizable radial menu size, position, and preview layout
+- Item icon/name/description toggles with size controls
+- Quick action visibility toggle and size slider
+- Config menu fits on smaller screens with scrollable pages
+- Preserves vanilla health/stamina/time HUD while hiding only the toolbar
 
-
----
 Original README below:
 
 ## Background
