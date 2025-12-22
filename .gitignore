@@ -367,3 +367,8 @@ FodyWeavers.xsd
 
 # mkdocs
 site
+# macOS
+.DS_Store
+
+# Local release artifacts
+dist/
