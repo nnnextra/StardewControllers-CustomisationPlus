@@ -171,3 +171,22 @@
         </frame>
     </lane>
 </template>
+
+<template name="enum-segments">
+    <frame background={@Mods/StardewUI/Sprites/MenuSlotTransparent} padding="4" tooltip="">
+        <segments balanced="true"
+                  highlight={@Mods/StardewUI/Sprites/White}
+                  highlight-tint="#39d"
+                  highlight-transition="150ms EaseOutQuart"
+                  separator={@Mods/StardewUI/Sprites/White}
+                  separator-tint="#c99"
+                  separator-width="2"
+                  selected-index={<>SelectedIndex}>
+            <label *repeat={Segments}
+                   margin="12, 8"
+                   bold={Selected}
+                   text={:Name}
+                   tooltip={:Description} />
+        </segments>
+    </frame>
+</template>

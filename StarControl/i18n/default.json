@@ -73,6 +73,8 @@
 
   // Config menu - Style page
   "Config.Layout.Heading": "Layout",
+  "Config.Layout.ButtonIcons.Title": "Button icons (requires restart)",
+  "Config.Layout.ButtonIcons.Description": "Choose which controller button icons to display. Requires a game restart to fully apply.",
   "Config.Layout.InnerRadius.Title": "Inner (spotlight) radius",
   "Config.Layout.InnerRadius.Description": "Radius of the inner circle showing detailed item info.",
   "Config.Layout.InnerImageSize.Title": "Spotlight image size",
@@ -300,6 +302,10 @@
   "Enum.ThumbStickPreference.SameAsTrigger.Description": "Use the stick that is on the same side as the wheel button; e.g. use the Left Stick for a wheel controlled by the Left Trigger and Right Stick for a wheel controlled by the Right Trigger.",
   "Enum.ThumbStickPreference.Both.Name": "Both",
   "Enum.ThumbStickPreference.Both.Description": "Allow either thumbstick to control menu navigation.",
+  "Enum.ButtonIconSet.Xbox.Name": "Xbox",
+  "Enum.ButtonIconSet.Xbox.Description": "Show Xbox-style button icons.",
+  "Enum.ButtonIconSet.PlayStation.Name": "PlayStation",
+  "Enum.ButtonIconSet.PlayStation.Description": "Show PlayStation-style button icons.",
 
   // Error messages
   "Error.MissingBinding": "No keybinding is set up for this action.",

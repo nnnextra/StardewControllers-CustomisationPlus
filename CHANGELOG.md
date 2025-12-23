@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.7-experimental.3] - 2025-12-23
+
+### Added
+
+- PlayStation button icon set and selector (Controls tab).
+- New UI sprite variants: `UI.Xbox.png` and `UI.PlayStation.png`.
+- Button icon set config option with a restart notice.
+
+### Changed
+
+- Button icon selection now swaps the UI sprite sheet on disk (restart required).
+- Updated attributions for PlayStation button icons.
+
+---
+
 ## [1.1.6] - 2025-12-22
 
 ### Summary
@@ -48,11 +63,3 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - GMCM keybinding sync now skips cleanly when the extension DLL is missing.
 - Config menu position flicker when opening the menu.
 - Fixed radial menu preview not showing properly in the Style tab of in-game config menu.
-
----
-
-## [1.1.7-experimental] - 2025-12-23
-
-### Changed
-
-- Internal cleanup only (no functional changes intended); test build.

@@ -2,6 +2,12 @@
 
 namespace StarControl.Config;
 
+public enum ButtonIconSet
+{
+    Xbox,
+    PlayStation,
+}
+
 /// <summary>
 /// Configures the visual appearance of the menu.
 /// </summary>
@@ -188,6 +194,11 @@ public class Styles : IConfigEquatable<Styles>
     /// </summary>
     public float QuickActionScale { get; set; } = 0.7f;
 
+    /// <summary>
+    /// Which controller button icon set to display in the UI.
+    /// </summary>
+    public ButtonIconSet ButtonIconSet { get; set; } = ButtonIconSet.Xbox;
+
     /// <inheritdoc />
     public bool Equals(Styles? other)
     {
@@ -225,6 +236,7 @@ public class Styles : IConfigEquatable<Styles>
             && MenuVerticalOffset.Equals(other.MenuVerticalOffset)
             && MenuHorizontalOffset.Equals(other.MenuHorizontalOffset)
             && ShowQuickActions == other.ShowQuickActions
-            && QuickActionScale.Equals(other.QuickActionScale);
+            && QuickActionScale.Equals(other.QuickActionScale)
+            && ButtonIconSet == other.ButtonIconSet;
     }
 }

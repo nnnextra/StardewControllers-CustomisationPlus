@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.IO;
+using System.Reflection;
 using StarControl.Api;
 using StarControl.Config;
 using StarControl.Data;
@@ -33,6 +34,7 @@ public class ModEntry : Mod
     private GenericModConfigSync? gmcmSync;
     private KeybindActivator keybindActivator = null!;
     private PageRegistry pageRegistry = null!;
+    private ButtonIconSet? appliedButtonIconSet;
 
     public ModEntry()
     {
@@ -46,6 +48,7 @@ public class ModEntry : Mod
         Logger.Monitor = Monitor;
         config = Helper.ReadConfig<ModConfig>();
         config.Input.ApplyLegacyThumbStickPreference();
+        ApplyButtonIconSet();
         Logger.Config = config.Debug;
         I18n.Init(helper.Translation);
         var builtInItems = new BuiltInItems(ModManifest);
@@ -95,6 +98,38 @@ public class ModEntry : Mod
         SaveRemappingFile();
     }
 
+    private void ApplyButtonIconSet()
+    {
+        var selectedSet = config.Style.ButtonIconSet;
+        if (appliedButtonIconSet == selectedSet)
+        {
+            return;
+        }
+        var spritesDir = Path.Combine(Helper.DirectoryPath, "assets", "ui", "sprites");
+        var sourceFile = Path.Combine(
+            spritesDir,
+            selectedSet == ButtonIconSet.PlayStation ? "UI.PlayStation.png" : "UI.Xbox.png"
+        );
+        var targetFile = Path.Combine(spritesDir, "UI.png");
+        if (!File.Exists(sourceFile))
+        {
+            Monitor.Log(
+                $"Button icon set '{selectedSet}' is missing at '{sourceFile}'.",
+                LogLevel.Warn
+            );
+            return;
+        }
+        try
+        {
+            File.Copy(sourceFile, targetFile, overwrite: true);
+            appliedButtonIconSet = selectedSet;
+        }
+        catch (Exception ex)
+        {
+            Monitor.Log($"Failed to apply button icon set '{selectedSet}': {ex}", LogLevel.Warn);
+        }
+    }
+
     private void ConfigurationViewModel_Saved(object? sender, EventArgs e)
     {
         pageRegistry.InvalidateAll();
@@ -104,6 +139,15 @@ public class ModEntry : Mod
         }
         Sound.Enabled = config.Sound.EnableUiSounds;
         GamePatches.SuppressRightStickChatBox = config.Input.SuppressRightStickChatBox;
+        var previousIconSet = appliedButtonIconSet;
+        ApplyButtonIconSet();
+        if (previousIconSet != appliedButtonIconSet)
+        {
+            Monitor.Log(
+                "Button icon set updated. Restart the game to fully apply the new icons.",
+                LogLevel.Info
+            );
+        }
     }
 
     [EventPriority(EventPriority.Low)]

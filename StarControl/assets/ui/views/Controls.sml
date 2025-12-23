@@ -32,6 +32,12 @@
                         description={#Config.Keybind.RemappingHud.Description}
                         button={<>RemappingHudButton} />
     </form-row-container>
+    <lane *context={:~ConfigurationViewModel.Style} layout="stretch content" orientation="vertical">
+        <form-row title={#Config.Layout.ButtonIcons.Title}
+                  description={#Config.Layout.ButtonIcons.Description}>
+            <enum-segments *context={:ButtonIconSet} />
+        </form-row>
+    </lane>
     <form-heading title={#Config.Selection.Heading} />
     <form-row title={#Config.Keybind.PrimaryActivation.Title}
               description={#Config.Keybind.PrimaryActivation.Description}>

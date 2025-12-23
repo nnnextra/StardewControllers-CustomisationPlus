@@ -5,6 +5,7 @@ namespace StarControl.UI;
 
 internal partial class StyleConfigurationViewModel
 {
+    public EnumSegmentsViewModel<ButtonIconSet> ButtonIconSet { get; } = new();
     public Func<float, string> FormatPixels { get; } = v => v.ToString("f0") + " px";
     public Func<float, string> FormatScale { get; } = v => v.ToString("0.00") + "x";
     public Func<float, string> FormatPercent { get; } = v => (v * 100).ToString("f0") + "%";
@@ -146,6 +147,7 @@ internal partial class StyleConfigurationViewModel
         MenuHorizontalOffset = config.MenuHorizontalOffset;
         ShowQuickActions = config.ShowQuickActions;
         QuickActionScale = config.QuickActionScale;
+        ButtonIconSet.SelectedValue = config.ButtonIconSet;
     }
 
     public void Save(Styles config)
@@ -177,5 +179,6 @@ internal partial class StyleConfigurationViewModel
         config.MenuHorizontalOffset = MenuHorizontalOffset;
         config.ShowQuickActions = ShowQuickActions;
         config.QuickActionScale = QuickActionScale;
+        config.ButtonIconSet = ButtonIconSet.SelectedValue;
     }
 }

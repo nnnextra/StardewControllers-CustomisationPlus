@@ -2,7 +2,7 @@
   <PropertyGroup>
     <AssemblyName>StarControl</AssemblyName>
     <RootNamespace>StarControl</RootNamespace>
-    <Version>1.1.7-experimental</Version>
+    <Version>1.1.7-experimental.3</Version>
     <AssemblyVersion>1.1.7.0</AssemblyVersion>
     <FileVersion>1.1.7.0</FileVersion>
     <TargetFramework>net6.0</TargetFramework>
@@ -34,6 +34,12 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="assets\ui\sprites\UI.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="assets\ui\sprites\UI.Xbox.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="assets\ui\sprites\UI.PlayStation.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="assets\ui\views\Actions.sml">
