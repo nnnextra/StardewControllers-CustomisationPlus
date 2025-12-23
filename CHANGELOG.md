@@ -6,16 +6,31 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [1.1.6] - 2025-12-22
 
+### Summary
+
+- Consolidated release with all changes from prior CustomisationPlus builds.
+
 ### Changed
 
-- Instant actions now support held tool use for continuous action
+- Reduced radial menu size and lowered on-screen position for a less intrusive UI.
+- Improved radial menu preview layout and centering.
+- Sharper item name rendering at small scales.
+- Updated default configuration values to match the new UI tuning.
+- Config menu now centers on most tabs and slides left on the Style tab to make room for the preview.
+- Config menu slide animation smoothed for better readability.
+- Preserves vanilla health/stamina/time HUD while hiding only the toolbar.
+- Instant actions now support held tool use for continuous action.
 
 ### Fixed
 
-- Right-stick scrolling in the config menu now works across all tabs without cursor snapping
-- Cursor stays hidden while opening/closing radial menus to prevent pop-in
-- GMCM keybinding sync now skips cleanly when the extension DLL is missing
-- Hot reload source sync no longer crashes when source paths are unavailable
+- In-game config menu scaling on smaller screens (incl. 1280x800) and visible scrollbars.
+- Preview rendering at sub-1.0 text scale.
+- Truncated item names in the radial menu center label.
+- Slingshot (and modded bows) assignment to quick actions.
+- Right-stick scrolling now works across all config tabs without cursor snapping.
+- Cursor stays hidden when opening/closing radial menus to prevent pop-in.
+- Hot reload source sync no longer crashes when source paths are unavailable.
+- GMCM keybinding sync now skips cleanly when the extension DLL is missing.
 
 ---
 
