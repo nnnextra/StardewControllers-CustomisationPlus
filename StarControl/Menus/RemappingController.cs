@@ -3,6 +3,7 @@ using StarControl.Config;
 using StarControl.Data;
 using StarControl.Graphics;
 using StarControl.Patches;
+using StardewValley.Tools;
 
 namespace StarControl.Menus;
 
@@ -110,7 +111,27 @@ internal class RemappingController(
                 }
                 else
                 {
-                    item.ContinueActivation();
+                    if (
+                        item is InventoryMenuItem inv
+                        && inv.Item is Tool
+                        && Context.IsPlayerFree
+                        && !item.IsActivating()
+                    )
+                    {
+                        var result = item.Activate(
+                            who,
+                            DelayedActions.None,
+                            ItemActivationType.Instant
+                        );
+                        if (result == ItemActivationResult.ToolUseStarted)
+                        {
+                            downButtons.Add(button);
+                        }
+                    }
+                    else
+                    {
+                        item.ContinueActivation();
+                    }
                 }
                 continue;
             }
@@ -144,7 +165,12 @@ internal class RemappingController(
                         );
                         if (result != ItemActivationResult.Ignored)
                         {
-                            if (result == ItemActivationResult.ToolUseStarted)
+                            if (item is InventoryMenuItem inv && inv.Item is Tool)
+                            {
+                                downButtons.Add(button);
+                                wasToolUseStarted = true;
+                            }
+                            else if (result == ItemActivationResult.ToolUseStarted)
                             {
                                 downButtons.Add(button);
                                 wasToolUseStarted = true;

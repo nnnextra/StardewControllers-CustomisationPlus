@@ -1,6 +1,9 @@
-﻿using System.ComponentModel;
+﻿using System.Collections;
+using System.ComponentModel;
+using System.Reflection;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using PropertyChanged.SourceGenerator;
 using StarControl.Config;
 
@@ -19,6 +22,8 @@ internal partial class ConfigurationViewModel : IDisposable
     private const int PreviewHorizontalPadding = 80;
     private const float MenuSlideDurationMs = 450f;
     private const int MenuVerticalNudge = -24;
+    private const double RightStickScrollRepeatMinMs = 35;
+    private const double RightStickScrollRepeatMaxMs = 140;
 
     public static event EventHandler<EventArgs>? Saved;
 
@@ -63,6 +68,7 @@ internal partial class ConfigurationViewModel : IDisposable
     private float slideTargetX;
     private double slideStartMs;
     private bool isSliding;
+    private double lastRightStickScrollMs;
     private double lastMenuPositionUpdateMs;
     private bool menuPositionInitialized;
 
@@ -217,6 +223,7 @@ internal partial class ConfigurationViewModel : IDisposable
     public void Update()
     {
         UpdateMenuPosition();
+        ClampMouseToMenuWhileScrolling();
         if (loadingPageIndex >= Pager.Pages.Count)
         {
             return;
@@ -330,6 +337,133 @@ internal partial class ConfigurationViewModel : IDisposable
     private void UpdatePreviewVisibility()
     {
         IsPreviewVisible = IsPreviewEnabled && Pager.SelectedPageIndex == 1; // Styles
+    }
+
+    private void ClampMouseToMenuWhileScrolling()
+    {
+        if (Controller?.Menu is null)
+        {
+            return;
+        }
+        var nowMs = Game1.currentGameTime?.TotalGameTime.TotalMilliseconds ?? 0;
+        var state = Game1.playerOneIndex >= PlayerIndex.One ? Game1.input.GetGamePadState() : new();
+        var stickY = state.ThumbSticks.Right.Y;
+        var absY = Math.Abs(stickY);
+        var deadZone = config.Input.ThumbstickDeadZone;
+        if (absY <= deadZone)
+        {
+            return;
+        }
+        var intensity = Math.Clamp((absY - deadZone) / (1f - deadZone), 0f, 1f);
+        var repeatMs =
+            RightStickScrollRepeatMaxMs
+            - (RightStickScrollRepeatMaxMs - RightStickScrollRepeatMinMs) * intensity;
+        if (nowMs - lastRightStickScrollMs < repeatMs)
+        {
+            return;
+        }
+        lastRightStickScrollMs = nowMs;
+        TryScrollActiveContainer(stickY > 0);
+    }
+
+    private bool TryScrollActiveContainer(bool scrollUp)
+    {
+        var container = GetActiveScrollContainer();
+        if (container is null)
+        {
+            return false;
+        }
+        var containerType = container.GetType();
+        var scrollSizeProp = containerType.GetProperty("ScrollSize");
+        var scrollSizeValue = scrollSizeProp?.GetValue(container);
+        var scrollSize = scrollSizeValue is float size ? size : 0f;
+        if (scrollSize <= 0f)
+        {
+            return false;
+        }
+        var methodName = scrollUp ? "ScrollBackward" : "ScrollForward";
+        var scrollMethod = containerType.GetMethod(methodName);
+        if (scrollMethod is null)
+        {
+            return false;
+        }
+        var result = scrollMethod.Invoke(container, Array.Empty<object>());
+        var scrolled = result is bool didScroll && didScroll;
+        if (scrolled)
+        {
+            Game1.playSound("shwip");
+        }
+        return scrolled;
+    }
+
+    private object? GetActiveScrollContainer()
+    {
+        if (Controller?.Menu is null)
+        {
+            return null;
+        }
+        var viewProp = Controller.Menu.GetType().GetProperty("View");
+        var rootView = viewProp?.GetValue(Controller.Menu);
+        if (rootView is null)
+        {
+            return null;
+        }
+        var selectedIndex = Pager.SelectedPageIndex;
+        var currentIndex = 0;
+        return FindScrollContainerByIndex(rootView, selectedIndex, ref currentIndex);
+    }
+
+    private static object? FindScrollContainerByIndex(
+        object view,
+        int targetIndex,
+        ref int currentIndex
+    )
+    {
+        var viewType = view.GetType();
+        var viewTypeName = viewType.FullName ?? string.Empty;
+        if (viewTypeName == "StardewUI.Widgets.ScrollableView")
+        {
+            var innerView = viewType
+                .GetProperty("View", BindingFlags.NonPublic | BindingFlags.Instance)
+                ?.GetValue(view);
+            if (innerView is not null)
+            {
+                if (currentIndex == targetIndex)
+                {
+                    return innerView;
+                }
+                currentIndex++;
+                return null;
+            }
+        }
+        if (viewTypeName == "StardewUI.Widgets.ScrollContainer")
+        {
+            if (currentIndex == targetIndex)
+            {
+                return view;
+            }
+            currentIndex++;
+        }
+        var getChildren = viewType.GetMethod("GetChildren", new[] { typeof(bool) });
+        var children = getChildren?.Invoke(view, new object[] { true }) as IEnumerable;
+        if (children is null)
+        {
+            return null;
+        }
+        foreach (var child in children)
+        {
+            var childView = child?.GetType().GetProperty("View")?.GetValue(child);
+            if (childView is null)
+            {
+                continue;
+            }
+            var result = FindScrollContainerByIndex(childView, targetIndex, ref currentIndex);
+            if (result is not null)
+            {
+                return result;
+            }
+        }
+        return null;
     }
 
     private void StartMenuSlide(float targetX, double nowMs)

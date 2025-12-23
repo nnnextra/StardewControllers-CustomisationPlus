@@ -61,6 +61,7 @@ internal class RadialMenuController(
     private float menuOpenTimeMs;
     private float menuScale;
     private float quickSlotOpacity;
+    private bool? previousMouseVisible;
     private bool usedRightStickInMenu;
     private bool? previousDisplayHud;
     private Toolbar? hiddenToolbar;
@@ -164,6 +165,8 @@ internal class RadialMenuController(
             activeMenu = menu;
             if (previousActiveMenu is null && activeMenu is not null)
             {
+                InputPatches.AwaitRightStickMoveForCursor();
+                InputPatches.ForceHideCursor = true;
                 ResetMouseToPlayer();
                 AnimateMenuOpen(elapsed); // Skip "zero" frame
             }
@@ -172,6 +175,22 @@ internal class RadialMenuController(
         if (!IsMenuActive)
         {
             RestoreHudState();
+        }
+        var forceHideCursor =
+            menus.Any(menu => menu.Toggle.State != MenuToggleState.Off) || menuOpenTimeMs > 0;
+        InputPatches.ForceHideCursor = forceHideCursor;
+        if (forceHideCursor)
+        {
+            if (previousMouseVisible is null)
+            {
+                previousMouseVisible = Game1.game1.IsMouseVisible;
+            }
+            Game1.game1.IsMouseVisible = false;
+        }
+        else if (previousMouseVisible is not null)
+        {
+            Game1.game1.IsMouseVisible = previousMouseVisible.Value;
+            previousMouseVisible = null;
         }
         TryActivateQuickSlot();
     }

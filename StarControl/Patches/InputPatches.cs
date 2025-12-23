@@ -10,6 +10,7 @@ internal static class InputPatches
 {
     public static Buttons? ToolUseButton { get; set; }
     public static TimeSpan RightStickSuppressionDuration { get; set; } = TimeSpan.FromSeconds(0.5);
+    public static bool ForceHideCursor { get; set; }
 
     private static double rightStickSuppressUntilMs;
     private static bool rightStickCursorAwaitingMove;
@@ -123,6 +124,13 @@ internal static class InputPatches
         );
     }
 
+    public static void AwaitRightStickMoveForCursor()
+    {
+        var nowMs = Game1.currentGameTime?.TotalGameTime.TotalMilliseconds ?? 0;
+        rightStickCursorAwaitingMove = true;
+        rightStickCursorAwaitMoveAfterMs = Math.Max(rightStickCursorAwaitMoveAfterMs, nowMs);
+    }
+
     public static void GetGamePadState_Postfix(ref GamePadState __result)
     {
         var nowMs = Game1.currentGameTime?.TotalGameTime.TotalMilliseconds ?? 0;
@@ -153,7 +161,7 @@ internal static class InputPatches
 
     public static void ShouldDrawMouseCursor_Postfix(ref bool __result)
     {
-        if (rightStickCursorAwaitingMove || IsRightStickSuppressed())
+        if (ForceHideCursor || rightStickCursorAwaitingMove || IsRightStickSuppressed())
         {
             __result = false;
         }
@@ -161,7 +169,7 @@ internal static class InputPatches
 
     public static bool DrawMouseCursor_Prefix()
     {
-        return !rightStickCursorAwaitingMove && !IsRightStickSuppressed();
+        return !ForceHideCursor && !rightStickCursorAwaitingMove && !IsRightStickSuppressed();
     }
 
     private static bool IsRightStickSuppressed()

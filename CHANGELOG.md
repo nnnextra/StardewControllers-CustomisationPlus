@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.6-prerelease] - 2025-12-22
+
+### Changed
+
+- Instant actions now support held tool use for continuous action
+
+### Fixed
+
+- Right-stick scrolling in the config menu now works across all tabs without cursor snapping
+- Cursor stays hidden while opening/closing radial menus to prevent pop-in
+- GMCM keybinding sync now skips cleanly when the extension DLL is missing
+- Hot reload source sync no longer crashes when source paths are unavailable
+
+---
+
 ## [1.1.5] - 2025-12-22
 
 ### Changed

@@ -396,6 +396,14 @@ public class ModEntry : Mod
                 "extensions",
                 "StarControl.Gmcm.dll"
             );
+            if (!File.Exists(gmcmExtensionPath))
+            {
+                Logger.Log(
+                    $"GMCM extension not found at '{gmcmExtensionPath}'; keybindings will not be synced.",
+                    LogLevel.Warn
+                );
+                return;
+            }
             var gmcmExtensionAssembly = Assembly.LoadFile(gmcmExtensionPath);
             var loaderType = gmcmExtensionAssembly.GetType(LOADER_TYPE);
             if (loaderType is null)

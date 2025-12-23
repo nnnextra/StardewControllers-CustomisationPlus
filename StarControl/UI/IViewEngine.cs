@@ -418,19 +418,28 @@ internal static class ViewEngineExtensions
         [CallerFilePath] string? callerFilePath = null
     )
     {
-        viewEngine.EnableHotReloading(FindProjectDirectory(callerFilePath));
+        var projectDirectory = FindProjectDirectory(callerFilePath);
+        if (string.IsNullOrEmpty(projectDirectory))
+        {
+            return;
+        }
+        viewEngine.EnableHotReloading(projectDirectory);
     }
 
     // Attempts to determine the project root directory given the path to an arbitrary source file by walking up the
     // directory tree until it finds a directory containing a file with .csproj extension.
     private static string? FindProjectDirectory(string? sourceFilePath)
     {
-        if (string.IsNullOrEmpty(sourceFilePath))
+        if (string.IsNullOrEmpty(sourceFilePath) || !File.Exists(sourceFilePath))
         {
             return null;
         }
         for (var dir = Directory.GetParent(sourceFilePath); dir is not null; dir = dir.Parent)
         {
+            if (!dir.Exists)
+            {
+                return null;
+            }
             if (dir.EnumerateFiles("*.csproj").Any())
             {
                 return dir.FullName;

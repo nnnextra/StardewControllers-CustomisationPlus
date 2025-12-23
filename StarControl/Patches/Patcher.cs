@@ -103,9 +103,10 @@ internal static class Patcher
             if (method is null)
             {
                 Logger.Log(
-                    $"Harmony patching failed: method {MethodName()} does not exist.",
-                    LogLevel.Error
+                    $"Harmony patching skipped: method {MethodName()} does not exist.",
+                    LogLevel.Warn
                 );
+                return;
             }
             harmony.Patch(method, prefix, postfix, transpiler, finalizer);
             Logger.Log($"Patched {MethodName()}.", LogLevel.Info);
