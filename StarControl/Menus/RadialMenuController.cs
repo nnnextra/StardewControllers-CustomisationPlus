@@ -55,7 +55,6 @@ internal class RadialMenuController(
     private PendingActivation? delayedItem;
     private TimeSpan elapsedActivationDelay;
     private bool enabled;
-    private float fadeOpacity;
     private int focusedIndex;
     private IRadialMenuItem? focusedItem;
     private float menuOpenTimeMs;
@@ -280,18 +279,13 @@ internal class RadialMenuController(
         menuOpenTimeMs += (float)elapsed.TotalMilliseconds;
         var menuProgress = MathHelper.Clamp(menuOpenTimeMs / MENU_ANIMATION_DURATION_MS, 0, 1);
         menuScale = menuProgress < 1 ? 1 - MathF.Pow(1 - menuProgress, 3) : 1;
-        fadeOpacity = 0f;
         var quickSlotProgress = MathHelper.Clamp(
             menuOpenTimeMs / QUICK_SLOT_ANIMATION_DURATION_MS,
             0,
             1
         );
         quickSlotOpacity = quickSlotProgress < 1 ? MathF.Sin(quickSlotProgress * MathF.PI / 2f) : 1;
-        Logger.Log(
-            LogCategory.Menus,
-            $"Menu animation frame: scale = {menuScale}, opacity = {fadeOpacity}",
-            LogLevel.Trace
-        );
+        Logger.Log(LogCategory.Menus, $"Menu animation frame: scale = {menuScale}", LogLevel.Trace);
     }
 
     private bool CheckStickActivation(bool secondaryAction)
@@ -371,7 +365,6 @@ internal class RadialMenuController(
         menuOpenTimeMs = 0;
         menuScale = 0;
         quickSlotOpacity = 0;
-        fadeOpacity = 0;
     }
 
     public void PrepareHudForMenu()

@@ -115,7 +115,6 @@ internal static class Patcher
         {
             Logger.Log($"Failed to patch {MethodName()}: {ex}", LogLevel.Error);
         }
-        return;
 
         string MethodName() => targetType.FullName + '.' + targetMethodName;
     }

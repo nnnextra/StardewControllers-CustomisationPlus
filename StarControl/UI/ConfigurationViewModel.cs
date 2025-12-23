@@ -69,7 +69,6 @@ internal partial class ConfigurationViewModel : IDisposable
     private double slideStartMs;
     private bool isSliding;
     private double lastRightStickScrollMs;
-    private double lastMenuPositionUpdateMs;
     private bool menuPositionInitialized;
 
     public int MenuWidth { get; private set; } = BaseMenuWidth;
@@ -172,7 +171,6 @@ internal partial class ConfigurationViewModel : IDisposable
         {
             menuPositionX = targetX;
             menuPositionInitialized = true;
-            lastMenuPositionUpdateMs = Game1.currentGameTime?.TotalGameTime.TotalMilliseconds ?? 0;
         }
         var y = (viewport.Height - MenuHeight) / 2 + MenuVerticalNudge;
         return new Point(Math.Max(0, (int)MathF.Round(menuPositionX)), Math.Max(0, y));
@@ -181,7 +179,6 @@ internal partial class ConfigurationViewModel : IDisposable
     public void InitializeMenuPosition()
     {
         menuPositionInitialized = false;
-        lastMenuPositionUpdateMs = 0;
         UpdateMenuPosition();
     }
 
@@ -524,7 +521,6 @@ internal partial class ConfigurationViewModel : IDisposable
                 }
             }
         }
-        lastMenuPositionUpdateMs = nowMs;
         Controller.Menu.xPositionOnScreen = Math.Max(0, (int)MathF.Round(menuPositionX));
         Controller.Menu.yPositionOnScreen = Math.Max(
             0,

@@ -48,3 +48,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - GMCM keybinding sync now skips cleanly when the extension DLL is missing.
 - Config menu position flicker when opening the menu.
 - Fixed radial menu preview not showing properly in the Style tab of in-game config menu.
+
+---
+
+## [1.1.7-experimental] - 2025-12-23
+
+### Changed
+
+- Internal cleanup only (no functional changes intended); test build.
