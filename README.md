@@ -1,4 +1,4 @@
-# Star Control for Stardew Valley - CustomisationPlus
+# Star Control - CustomisationPlus for Stardew Valley
 
 This is a fork of focustense/StardewControllers focused on deeper customization and better small-screen usability. It adds extra controls for radial menu size, position, and preview layout; item label and description sizing and visibility; quick action visibility and size; and config UI tweaks so the menu fits comfortably on smaller displays like the Steam Deck while staying minimal on larger screens.
 
