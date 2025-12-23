@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.1.7-experimental.4] - 2025-12-23
+## [1.1.7-experimental.5] - 2025-12-23
 
 ### Added
 
@@ -14,8 +14,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Changed
 
-- Button icon selection now swaps the UI sprite sheet on disk (restart required).
+- Button icon selection now swaps and reloads the UI sprite sheet in-game.
 - Updated attributions for PlayStation button icons.
+- Tooltip popups removed from the Defaults/Cancel/Save buttons to prevent overlap.
+
+### Fixed
+
+- Button icon swaps now invalidate all UI sprites so switching back works reliably.
 
 ---
 

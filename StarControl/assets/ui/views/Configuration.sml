@@ -138,7 +138,7 @@
             default-background-tint={&tint}
             hover-background={@Mods/StardewUI/Sprites/ButtonLight}
             shadow-visible="true"
-            tooltip={&description}
+            tooltip=""
             left-click=|PerformAction(&action)|>
         <label bold={&bold}
                shadow-alpha="0.5"

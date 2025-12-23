@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Reflection;
+using Newtonsoft.Json.Linq;
 using StarControl.Api;
 using StarControl.Config;
 using StarControl.Data;
@@ -123,9 +124,7 @@ public class ModEntry : Mod
         {
             File.Copy(sourceFile, targetFile, overwrite: true);
             appliedButtonIconSet = selectedSet;
-            var assetName = $"Mods/{ModManifest.UniqueID}/Sprites/UI";
-            Helper.GameContent.InvalidateCache(assetName);
-            Helper.GameContent.InvalidateCache(assetName + "@data");
+            InvalidateButtonIconSprites();
         }
         catch (Exception ex)
         {
@@ -150,6 +149,40 @@ public class ModEntry : Mod
                 "Button icon set updated. Close and reopen the menu if the icons don't refresh.",
                 LogLevel.Info
             );
+        }
+    }
+
+    private void InvalidateButtonIconSprites()
+    {
+        var assetBase = $"Mods/{ModManifest.UniqueID}/Sprites/UI";
+        Helper.GameContent.InvalidateCache(assetBase);
+        Helper.GameContent.InvalidateCache(assetBase + "@data");
+        var spriteSheetPath = Path.Combine(
+            Helper.DirectoryPath,
+            "assets",
+            "ui",
+            "sprites",
+            "UI.json"
+        );
+        if (!File.Exists(spriteSheetPath))
+        {
+            return;
+        }
+        try
+        {
+            var json = JObject.Parse(File.ReadAllText(spriteSheetPath));
+            if (json["Sprites"] is not JObject sprites)
+            {
+                return;
+            }
+            foreach (var sprite in sprites.Properties())
+            {
+                Helper.GameContent.InvalidateCache($"{assetBase}:{sprite.Name}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Monitor.Log($"Failed to invalidate UI sprites: {ex}", LogLevel.Warn);
         }
     }
 
