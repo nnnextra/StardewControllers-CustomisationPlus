@@ -73,8 +73,8 @@
 
   // Config menu - Style page
   "Config.Layout.Heading": "Layout",
-  "Config.Layout.ButtonIcons.Title": "Button icons (requires restart)",
-  "Config.Layout.ButtonIcons.Description": "Choose which controller button icons to display. Requires a game restart to fully apply.",
+  "Config.Layout.ButtonIcons.Title": "Button icons",
+  "Config.Layout.ButtonIcons.Description": "Choose which controller button icons to display. Close and reopen the menu if icons don't refresh.",
   "Config.Layout.InnerRadius.Title": "Inner (spotlight) radius",
   "Config.Layout.InnerRadius.Description": "Radius of the inner circle showing detailed item info.",
   "Config.Layout.InnerImageSize.Title": "Spotlight image size",

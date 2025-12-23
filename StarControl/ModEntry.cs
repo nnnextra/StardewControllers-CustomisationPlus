@@ -123,6 +123,9 @@ public class ModEntry : Mod
         {
             File.Copy(sourceFile, targetFile, overwrite: true);
             appliedButtonIconSet = selectedSet;
+            var assetName = $"Mods/{ModManifest.UniqueID}/Sprites/UI";
+            Helper.GameContent.InvalidateCache(assetName);
+            Helper.GameContent.InvalidateCache(assetName + "@data");
         }
         catch (Exception ex)
         {
@@ -144,7 +147,7 @@ public class ModEntry : Mod
         if (previousIconSet != appliedButtonIconSet)
         {
             Monitor.Log(
-                "Button icon set updated. Restart the game to fully apply the new icons.",
+                "Button icon set updated. Close and reopen the menu if the icons don't refresh.",
                 LogLevel.Info
             );
         }
