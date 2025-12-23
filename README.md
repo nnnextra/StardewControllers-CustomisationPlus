@@ -19,8 +19,8 @@ Screenshot from 1280 x 800 resolution display (Steam Deck native resolution)
 - Dual-stick navigation options with improved cursor behavior after wheel close
 
 ---
-_
-Original README below:
+
+_Original README below:_
 
 ## Background
 
