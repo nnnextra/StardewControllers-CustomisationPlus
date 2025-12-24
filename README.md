@@ -2,7 +2,7 @@
 
 This is a fork of focustense/StardewControllers focused on deeper customization and better small-screen usability. The section below highlights what the CustomisationPlus fork adds on top of the original mod, including extra controls for radial menu size, position, and preview layout; item label and description sizing and visibility; quick action visibility and size; and config UI tweaks so the menu fits comfortably on smaller displays like the Steam Deck while staying minimal on larger screens.
 
-This fork also includes a bug fix that resolves the inability to assign a Slingshot to a quick action button (and also works for bows from Swords & Sorcery), plus UI polish like improved text scaling and preserving the vanilla health/stamina/time HUD while the toolbar hides.
+This fork also includes a bug fix that resolves the inability to assign a Slingshot to a quick action button (also works for bows from Swords & Sorcery), plus UI polish like improved text scaling and preserving the vanilla health/stamina/time HUD when opening the radial menus while the toolbar hides.
 
 You must remove any previous versions of Star Control or Radial Menu before installing this mod.
 
