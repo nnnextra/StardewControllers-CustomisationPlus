@@ -689,10 +689,30 @@ internal class RadialMenuController(
 
     private static void ResetMouseToPlayer()
     {
-        var playerPos = Game1.player?.getStandingPosition() ?? Vector2.Zero;
+        var player = Game1.player;
+        if (player is null)
+        {
+            return;
+        }
+        var facingOffset = player.FacingDirection switch
+        {
+            0 => new Vector2(0, -1), // Up
+            1 => new Vector2(1, 0), // Right
+            2 => new Vector2(0, 1), // Down
+            3 => new Vector2(-1, 0), // Left
+            _ => Vector2.Zero,
+        };
+        var standingPos = player.getStandingPosition();
+        var targetTile =
+            new Vector2(
+                (int)(standingPos.X / Game1.tileSize),
+                (int)(standingPos.Y / Game1.tileSize)
+            ) + facingOffset;
+        var targetPos =
+            targetTile * Game1.tileSize + new Vector2(Game1.tileSize / 2f, Game1.tileSize / 2f);
         var viewport = Game1.viewport;
-        var cursorX = (int)(playerPos.X - viewport.X);
-        var cursorY = (int)(playerPos.Y - viewport.Y);
+        var cursorX = (int)(targetPos.X - viewport.X);
+        var cursorY = (int)(targetPos.Y - viewport.Y);
         Game1.setMousePosition(cursorX, cursorY);
     }
 }
