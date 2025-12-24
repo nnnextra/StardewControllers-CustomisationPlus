@@ -14,17 +14,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Changed
 
-- Controller button prompt selector moved to the Controls tab.
+- Instant Actions (remapping) menu layout adjusted to better fit smaller screens; middle list now scrolls with a visible scrollbar.
 - Switching controller prompt sets now reloads UI sprites in-game (close and reopen the menu if needed).
 - Control prompts and the mod-menu keybind editor now follow the selected controller prompt set.
 - Quick action menu slot content scaled up while keeping the menu size the same.
-- Instant Actions (remapping) menu layout adjusted to better fit smaller screens; middle list now scrolls with a visible scrollbar.
 
 ### Fixed
 
 - Mouse/trackpad now reveals the cursor correctly after closing a wheel.
-- Controller prompt set switching now reliably toggles back and forth.
-- Controls tab button mapping labels wrap cleanly.
 - Defaults/Cancel/Save tooltips removed to avoid overlap on smaller screens.
 
 ---
