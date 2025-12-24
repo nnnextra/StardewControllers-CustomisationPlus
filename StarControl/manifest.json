@@ -2,7 +2,7 @@
   "$schema": "https://smapi.io/schemas/manifest.json",
   "Name": "Star Control - CustomisationPlus",
   "Author": "nnnextra (forked from focustense)",
-  "Version": "1.1.9-dev.3",
+  "Version": "1.1.9",
   "Description": "Radial menus for toolbar, designed to be used with controllers",
   "UniqueID": "focustense.StarControl",
   "EntryDll": "StarControl.dll",
