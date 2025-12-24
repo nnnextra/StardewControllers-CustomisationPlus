@@ -8,21 +8,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
-- PlayStation button icon set and selector (Controls tab).
+- PlayStation controller button prompt icon set and selector (Controls tab).
 - Instant Actions menu item in the mod wheel with visibility toggle.
-- PlayStation button spritemap and sprite sheet variants.
+- PlayStation controller prompt spritemap and sprite sheet variants.
 
 ### Changed
 
-- Button icon selector moved to the Controls tab.
-- Button icon switching now reloads UI sprites in-game (close and reopen the menu if needed).
-- Control prompts and mod-menu keybind editor respect the selected icon set.
+- Controller button prompt selector moved to the Controls tab.
+- Switching controller prompt sets now reloads UI sprites in-game (close and reopen the menu if needed).
+- Control prompts and the mod-menu keybind editor now follow the selected controller prompt set.
 - Quick action menu slot content scaled up while keeping the menu size the same.
 - Instant Actions (remapping) menu layout adjusted to better fit smaller screens; middle list now scrolls with a visible scrollbar.
 
 ### Fixed
 
-- Button icon switching now reliably toggles back and forth.
+- Controller prompt set switching now reliably toggles back and forth.
 - Controls tab button mapping labels wrap cleanly.
 - Defaults/Cancel/Save tooltips removed to avoid overlap on smaller screens.
 
