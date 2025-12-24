@@ -46,19 +46,7 @@ internal static class Patcher
         TryPatch(
             harmony,
             typeof(Game1),
-            "shouldDrawMouseCursor",
-            postfix: new(typeof(InputPatches), nameof(InputPatches.ShouldDrawMouseCursor_Postfix))
-        );
-        TryPatch(
-            harmony,
-            typeof(Game1),
             "drawMouseCursor",
-            prefix: new(typeof(InputPatches), nameof(InputPatches.DrawMouseCursor_Prefix))
-        );
-        TryPatch(
-            harmony,
-            typeof(Game1),
-            "drawMouseCursorIgnoreAction",
             prefix: new(typeof(InputPatches), nameof(InputPatches.DrawMouseCursor_Prefix))
         );
         TryPatch(
