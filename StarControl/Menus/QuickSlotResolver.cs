@@ -1,4 +1,6 @@
-﻿using StardewValley.Tools;
+﻿using System.Reflection;
+using StardewValley.ItemTypeDefinitions;
+using StardewValley.Tools;
 
 namespace StarControl.Menus;
 
@@ -36,7 +38,7 @@ internal class QuickSlotResolver(Farmer player, ModMenu modMenu)
             // So we match on the inferred "type" (scythe vs. weapon) and then for non-scythe
             // weapons specifically (and only those), give preference to exact matches before
             // sorting by level.
-            var isScythe = MeleeWeapon.IsScythe(data.QualifiedItemId);
+            var isScythe = IsScythe(data);
             Logger.Log(
                 LogCategory.QuickSlots,
                 $"Item '{id}' appears to be a weapon with (scythe = {isScythe})."
@@ -81,6 +83,31 @@ internal class QuickSlotResolver(Farmer player, ModMenu modMenu)
                 + $"{match?.Name ?? "(nothing)"} with ID {match?.QualifiedItemId ?? "N/A"}."
         );
         return match;
+    }
+
+    private static bool IsScythe(ParsedItemData data)
+    {
+        var method = typeof(MeleeWeapon).GetMethod(
+            "IsScythe",
+            BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static,
+            binder: null,
+            types: [typeof(string)],
+            modifiers: null
+        );
+        if (method is not null)
+        {
+            try
+            {
+                return (bool)method.Invoke(null, [data.QualifiedItemId])!;
+            }
+            catch
+            {
+                // Fall through to heuristic below.
+            }
+        }
+        var name = data.InternalName ?? string.Empty;
+        return name.Contains("Scythe", StringComparison.OrdinalIgnoreCase)
+            || data.QualifiedItemId.Contains("Scythe", StringComparison.OrdinalIgnoreCase);
     }
 
     public IRadialMenuItem? ResolveItem(string id, ItemIdType idType)
