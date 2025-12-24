@@ -22,6 +22,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- Mouse/trackpad now reveals the cursor correctly after closing a wheel.
 - Controller prompt set switching now reliably toggles back and forth.
 - Controls tab button mapping labels wrap cleanly.
 - Defaults/Cancel/Save tooltips removed to avoid overlap on smaller screens.
