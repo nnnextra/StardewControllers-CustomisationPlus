@@ -358,6 +358,10 @@ internal class RadialMenuController(
             ResetMouseToPlayer();
             InputPatches.SuppressRightStickFor(InputPatches.RightStickSuppressionDuration);
         }
+        if (Game1.player is not null)
+        {
+            Game1.player.lastClick = Vector2.Zero;
+        }
         InputPatches.AwaitRightStickMoveForCursor();
         InputPatches.NotifyMousePositionReset();
         usedRightStickInMenu = false;
