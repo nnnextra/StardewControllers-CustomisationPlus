@@ -9,8 +9,6 @@ You must remove any previous versions of Star Control or Radial Menu before inst
 ![Full overlay screenshot](docs/images/screenshot-controller-overlay.png)
 Screenshot from 1280 x 800 resolution display (Steam Deck native resolution)
 
-https://github.com/user-attachments/assets/6aa94929-b0e4-45aa-a595-359583fe7f70
-
 ![Full overlay screenshot](docs/images/demo3.opt.gif)
 
 ## Highlights
