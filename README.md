@@ -11,8 +11,6 @@ Screenshot from 1280 x 800 resolution display (Steam Deck native resolution)
 
 ![Full overlay screenshot](docs/images/out_1280_60.gif)
 
-![Full overlay screenshot](docs/images/out_1280_30.webp)
-
 ## Highlights
 
 - Customizable radial menu size, position, and preview layout
