@@ -1,4 +1,9 @@
-﻿using PropertyChanged.SourceGenerator;
+﻿using System.Collections;
+using System.Reflection;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
+using PropertyChanged.SourceGenerator;
+using StarControl.Config;
 using StarControl.Data;
 using StarControl.Graphics;
 using StarControl.Menus;
@@ -10,9 +15,19 @@ internal partial class RemappingViewModel(
     Farmer who,
     IEnumerable<IRadialMenuItem> modItems,
     SButton menuToggleButton,
+    float thumbstickDeadZone,
+    ButtonIconSet buttonIconSet,
     Action<Dictionary<SButton, RemappingSlot>> onSave
 )
 {
+    private const int BaseMenuWidth = 950;
+    private const int BaseMenuHeight = 700;
+    private const int MinMenuWidth = 720;
+    private const int MinMenuHeight = 520;
+    private const int ViewportPaddingWidth = 128;
+    private const int ViewportPaddingHeight = 120;
+    private const int MenuVerticalNudge = -24;
+
     public IMenuController? Controller { get; set; }
     public bool IsItemHovered => HoveredItem is not null;
     public bool IsSlotHovered => HoveredSlot is not null;
@@ -36,6 +51,12 @@ internal partial class RemappingViewModel(
     public IEnumerable<RemappingSlotViewModel> Slots => slotsByButton.Values;
 
     [Notify]
+    private ButtonIconSet buttonIconSet = buttonIconSet;
+
+    [Notify]
+    private string menuLayout = $"{BaseMenuWidth}px {BaseMenuHeight}px";
+
+    [Notify]
     private bool canReassign;
 
     [Notify]
@@ -44,6 +65,19 @@ internal partial class RemappingViewModel(
     [Notify]
     private RemappingSlotViewModel? hoveredSlot;
 
+    [Notify]
+    private bool showAssignTip = true;
+
+    [Notify]
+    private bool showUnassignTip;
+
+    private const double RightStickScrollRepeatMinMs = 35;
+    private const double RightStickScrollRepeatMaxMs = 140;
+
+    private double lastRightStickScrollMs;
+    private bool menuLayoutInitialized;
+    private int menuWidth = BaseMenuWidth;
+    private int menuHeight = BaseMenuHeight;
     private readonly Dictionary<SButton, RemappingSlotViewModel> slotsByButton = new()
     {
         { SButton.DPadLeft, new(SButton.DPadLeft) },
@@ -109,6 +143,7 @@ internal partial class RemappingViewModel(
             item.AssignedButton = button;
             slot.Item = item;
         }
+        UpdateTipVisibility();
     }
 
     public void Save()
@@ -144,6 +179,7 @@ internal partial class RemappingViewModel(
     public void SetSlotHovered(RemappingSlotViewModel? slot)
     {
         HoveredSlot = slot;
+        UpdateTipVisibility();
     }
 
     public void UnassignSlot(RemappingSlotViewModel slot)
@@ -156,13 +192,20 @@ internal partial class RemappingViewModel(
         slot.Item.AssignedButton = SButton.None;
         slot.Item = null;
         OnPropertyChanged(new(nameof(IsSlotHoveredAndAssigned)));
+        UpdateTipVisibility();
         Save();
     }
 
     public void Update()
     {
+        if (!menuLayoutInitialized)
+        {
+            UpdateLayoutForViewport();
+            menuLayoutInitialized = true;
+        }
         CanReassign =
             inputHelper.IsDown(SButton.LeftTrigger) || inputHelper.IsDown(SButton.RightTrigger);
+        HandleRightStickScroll();
         // IClickableMenu.receiveGamePadButton bizarrely does not receive some buttons such as the
         // left/right stick. We have to check them for through the helper.
         if (
@@ -177,6 +220,150 @@ internal partial class RemappingViewModel(
         {
             Controller?.Close();
         }
+    }
+
+    public void InitializeLayout()
+    {
+        menuLayoutInitialized = false;
+        UpdateLayoutForViewport();
+        menuLayoutInitialized = true;
+    }
+
+    public Point GetMenuPosition()
+    {
+        var viewport = Game1.uiViewport;
+        var x = (viewport.Width - menuWidth) / 2;
+        var y = (viewport.Height - menuHeight) / 2 + MenuVerticalNudge;
+        return new Point(Math.Max(0, x), Math.Max(0, y));
+    }
+
+    private void UpdateLayoutForViewport()
+    {
+        var viewport = Game1.uiViewport;
+        var width = Math.Min(
+            BaseMenuWidth,
+            Math.Max(MinMenuWidth, viewport.Width - ViewportPaddingWidth)
+        );
+        var height = Math.Min(
+            BaseMenuHeight,
+            Math.Max(MinMenuHeight, viewport.Height - ViewportPaddingHeight)
+        );
+        menuWidth = width;
+        menuHeight = height;
+        MenuLayout = $"{width}px {height}px";
+    }
+
+    private void UpdateTipVisibility()
+    {
+        ShowUnassignTip = IsSlotHoveredAndAssigned;
+        ShowAssignTip = !ShowUnassignTip;
+    }
+
+    private void HandleRightStickScroll()
+    {
+        if (Controller?.Menu is null)
+        {
+            return;
+        }
+        var nowMs = Game1.currentGameTime?.TotalGameTime.TotalMilliseconds ?? 0;
+        var state = Game1.playerOneIndex >= PlayerIndex.One ? Game1.input.GetGamePadState() : new();
+        var stickY = state.ThumbSticks.Right.Y;
+        var absY = Math.Abs(stickY);
+        if (absY <= thumbstickDeadZone)
+        {
+            return;
+        }
+        var intensity = Math.Clamp((absY - thumbstickDeadZone) / (1f - thumbstickDeadZone), 0f, 1f);
+        var repeatMs =
+            RightStickScrollRepeatMaxMs
+            - (RightStickScrollRepeatMaxMs - RightStickScrollRepeatMinMs) * intensity;
+        if (nowMs - lastRightStickScrollMs < repeatMs)
+        {
+            return;
+        }
+        lastRightStickScrollMs = nowMs;
+        TryScrollActiveContainer(stickY > 0);
+    }
+
+    private bool TryScrollActiveContainer(bool scrollUp)
+    {
+        var container = GetActiveScrollContainer();
+        if (container is null)
+        {
+            return false;
+        }
+        var containerType = container.GetType();
+        var scrollSizeProp = containerType.GetProperty("ScrollSize");
+        var scrollSizeValue = scrollSizeProp?.GetValue(container);
+        var scrollSize = scrollSizeValue is float size ? size : 0f;
+        if (scrollSize <= 0f)
+        {
+            return false;
+        }
+        var methodName = scrollUp ? "ScrollBackward" : "ScrollForward";
+        var scrollMethod = containerType.GetMethod(methodName);
+        if (scrollMethod is null)
+        {
+            return false;
+        }
+        var result = scrollMethod.Invoke(container, Array.Empty<object>());
+        var scrolled = result is bool didScroll && didScroll;
+        if (scrolled)
+        {
+            Game1.playSound("shwip");
+        }
+        return scrolled;
+    }
+
+    private object? GetActiveScrollContainer()
+    {
+        var viewProp = Controller?.Menu?.GetType().GetProperty("View");
+        var rootView = viewProp?.GetValue(Controller?.Menu!);
+        if (rootView is null)
+        {
+            return null;
+        }
+        return FindScrollContainer(rootView);
+    }
+
+    private static object? FindScrollContainer(object view)
+    {
+        var viewType = view.GetType();
+        var viewTypeName = viewType.FullName ?? string.Empty;
+        if (viewTypeName == "StardewUI.Widgets.ScrollableView")
+        {
+            var innerView = viewType
+                .GetProperty("View", BindingFlags.NonPublic | BindingFlags.Instance)
+                ?.GetValue(view);
+            if (innerView is not null)
+            {
+                return innerView;
+            }
+        }
+        if (viewTypeName == "StardewUI.Widgets.ScrollContainer")
+        {
+            return view;
+        }
+        var getChildren = viewType.GetMethod("GetChildren", new[] { typeof(bool) });
+        var children = getChildren?.Invoke(view, new object[] { true }) as IEnumerable;
+        if (children is null)
+        {
+            return null;
+        }
+        foreach (var child in children)
+        {
+            var childView = child?.GetType().GetProperty("View")?.GetValue(child);
+            if (childView is null)
+            {
+                continue;
+            }
+            var result = FindScrollContainer(childView);
+            if (result is not null)
+            {
+                return result;
+            }
+        }
+        return null;
     }
 }
 

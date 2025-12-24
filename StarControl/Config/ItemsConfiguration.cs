@@ -55,10 +55,28 @@ public class ItemsConfiguration : IConfigEquatable<ItemsConfiguration>
     public bool ShowSettingsItem { get; set; } = true;
 
     /// <summary>
+    /// Whether to display the Instant Actions item on page
+    /// <see cref="InstantActionsItemPageIndex"/> and at position
+    /// <see cref="InstantActionsItemPositionIndex"/>.
+    /// </summary>
+    /// <remarks>
+    /// The Instant Actions item always exists and always has a specific location, but can be
+    /// suppressed from the Mod Menu during gameplay. It will still appear in the configuration
+    /// menu when editing the menu items.
+    /// </remarks>
+    public bool ShowInstantActionsItem { get; set; } = true;
+
+    /// <summary>
     /// The zero-based page number on which to show the Star Control Settings item, which brings up
     /// the configuration menu.
     /// </summary>
     public int SettingsItemPageIndex { get; set; }
+
+    /// <summary>
+    /// The zero-based page number on which to show the Instant Actions item, which brings up the
+    /// remapping (instant actions) menu.
+    /// </summary>
+    public int InstantActionsItemPageIndex { get; set; }
 
     /// <summary>
     /// The zero-based position within the specific Mod Menu Page identified by
@@ -69,6 +87,16 @@ public class ItemsConfiguration : IConfigEquatable<ItemsConfiguration>
     /// it will be the first item on that page.
     /// </remarks>
     public int SettingsItemPositionIndex { get; set; }
+
+    /// <summary>
+    /// The zero-based position within the specific Mod Menu Page identified by
+    /// <see cref="InstantActionsItemPageIndex"/> where the Instant Actions item should be shown.
+    /// </summary>
+    /// <remarks>
+    /// The item will be inserted <em>before</em> the specified index, so an index of <c>0</c> means
+    /// it will be the first item on that page.
+    /// </remarks>
+    public int InstantActionsItemPositionIndex { get; set; }
 
     /// <summary>
     /// Map of all quick-slot buttons to the corresponding quick slot item (if any).
@@ -164,8 +192,11 @@ public class ItemsConfiguration : IConfigEquatable<ItemsConfiguration>
                 (page1, page2) => page1.SequenceEqual(page2, (item1, item2) => item1.Equals(item2))
             )
             && ShowSettingsItem == other.ShowSettingsItem
+            && ShowInstantActionsItem == other.ShowInstantActionsItem
             && SettingsItemPageIndex == other.SettingsItemPageIndex
+            && InstantActionsItemPageIndex == other.InstantActionsItemPageIndex
             && SettingsItemPositionIndex == other.SettingsItemPositionIndex
+            && InstantActionsItemPositionIndex == other.InstantActionsItemPositionIndex
             && QuickSlots.Count == other.QuickSlots.Count
             && QuickSlots.IsEquivalentTo(other.QuickSlots, (slot1, slot2) => slot1.Equals(slot2));
     }

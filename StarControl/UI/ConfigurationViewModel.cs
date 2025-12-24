@@ -99,6 +99,12 @@ internal partial class ConfigurationViewModel : IDisposable
         ];
         Pager.PropertyChanged += Pager_PropertyChanged;
         Items.PropertyChanged += Items_PropertyChanged;
+        Style.ButtonIconSet.ValueChanged += (_, _) =>
+        {
+            var iconSet = Style.ButtonIconSet.SelectedValue;
+            Items.SetButtonIconSet(iconSet);
+            Input.SetButtonIconSet(iconSet);
+        };
         Preview = new(Style, 500, 500);
     }
 
@@ -280,6 +286,9 @@ internal partial class ConfigurationViewModel : IDisposable
     {
         Input.Load(config.Input);
         Style.Load(config.Style);
+        var iconSet = Style.ButtonIconSet.SelectedValue;
+        Items.SetButtonIconSet(iconSet);
+        Input.SetButtonIconSet(iconSet);
         Items.Load(config.Items);
         Sound.Load(config.Sound);
         Mods.Load(config.Integrations);

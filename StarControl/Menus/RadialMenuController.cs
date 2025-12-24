@@ -164,9 +164,15 @@ internal class RadialMenuController(
             activeMenu = menu;
             if (previousActiveMenu is null && activeMenu is not null)
             {
+                InputPatches.RightStickCursorDeadZone = Math.Clamp(
+                    config.Input.ThumbstickDeadZone + 0.05f,
+                    0.1f,
+                    0.6f
+                );
                 InputPatches.AwaitRightStickMoveForCursor();
                 InputPatches.ForceHideCursor = true;
                 ResetMouseToPlayer();
+                InputPatches.NotifyMousePositionReset();
                 AnimateMenuOpen(elapsed); // Skip "zero" frame
             }
         }
@@ -352,6 +358,8 @@ internal class RadialMenuController(
             ResetMouseToPlayer();
             InputPatches.SuppressRightStickFor(InputPatches.RightStickSuppressionDuration);
         }
+        InputPatches.AwaitRightStickMoveForCursor();
+        InputPatches.NotifyMousePositionReset();
         usedRightStickInMenu = false;
         if (fromActivation)
         {

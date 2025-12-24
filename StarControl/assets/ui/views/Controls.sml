@@ -124,15 +124,28 @@
     <lane layout="350px content"
           vertical-content-alignment="middle"
           tooltip={&description}>
-        <mini-keybind button={&button} />
-        <label margin="16, 0, 0, 0" text={&title} />
+        <mini-keybind button={&button}
+                      iconSet={:ButtonIconSetValue} />
+        <label layout="stretch content"
+               margin="16, 0, 0, 0"
+               max-lines="2"
+               text={&title} />
     </lane>
 </template>
 
 <template name="mini-keybind">
-    <keybind-editor button-height="32"
-                    editable-type="SingleButton"
-                    focusable="true"
-                    sprite-map={@Mods/focustense.StarControl/SpriteMaps/Kenney}
-                    keybind-list={&button} />
+    <frame *switch={&iconSet} layout="content content">
+        <keybind-editor *case="PlayStation"
+                        button-height="32"
+                        editable-type="SingleButton"
+                        focusable="true"
+                        sprite-map={@Mods/focustense.StarControl/SpriteMaps/Kenney.PlayStation}
+                        keybind-list={&button} />
+        <keybind-editor *case="Xbox"
+                        button-height="32"
+                        editable-type="SingleButton"
+                        focusable="true"
+                        sprite-map={@Mods/focustense.StarControl/SpriteMaps/Kenney}
+                        keybind-list={&button} />
+    </frame>
 </template>

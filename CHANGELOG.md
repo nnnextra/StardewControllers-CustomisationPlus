@@ -4,23 +4,27 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.1.7-experimental.5] - 2025-12-23
+## [1.1.7] - 2025-12-23
 
 ### Added
 
 - PlayStation button icon set and selector (Controls tab).
-- New UI sprite variants: `UI.Xbox.png` and `UI.PlayStation.png`.
-- Button icon set config option with a restart notice.
+- Instant Actions menu item in the mod wheel with visibility toggle.
+- PlayStation button spritemap and sprite sheet variants.
 
 ### Changed
 
-- Button icon selection now swaps and reloads the UI sprite sheet in-game.
-- Updated attributions for PlayStation button icons.
-- Tooltip popups removed from the Defaults/Cancel/Save buttons to prevent overlap.
+- Button icon selector moved to the Controls tab.
+- Button icon switching now reloads UI sprites in-game (close and reopen the menu if needed).
+- Control prompts and mod-menu keybind editor respect the selected icon set.
+- Quick action menu slot content scaled up while keeping the menu size the same.
+- Instant Actions (remapping) menu layout adjusted to better fit smaller screens; middle list now scrolls with a visible scrollbar.
 
 ### Fixed
 
-- Button icon swaps now invalidate all UI sprites so switching back works reliably.
+- Button icon switching now reliably toggles back and forth.
+- Controls tab button mapping labels wrap cleanly.
+- Defaults/Cancel/Save tooltips removed to avoid overlap on smaller screens.
 
 ---
 

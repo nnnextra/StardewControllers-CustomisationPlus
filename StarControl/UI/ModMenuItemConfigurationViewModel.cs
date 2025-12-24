@@ -95,6 +95,9 @@ internal partial class ModMenuItemConfigurationViewModel
     private Keybind keybind = new();
 
     [Notify]
+    private ButtonIconSet buttonIconSet = ButtonIconSet.Xbox;
+
+    [Notify]
     private string iconAssetPath = "";
 
     [Notify]

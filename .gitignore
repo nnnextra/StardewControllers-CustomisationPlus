@@ -118,6 +118,9 @@ ipch/
 *.vspx
 *.sap
 
+# GMCM build artifact created by mod build config.
+StarControl.Gmcm/*Undefined*StarControl/
+
 # Visual Studio Trace Files
 *.e2e
 

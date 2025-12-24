@@ -11,10 +11,19 @@ internal static class InputPatches
     public static Buttons? ToolUseButton { get; set; }
     public static TimeSpan RightStickSuppressionDuration { get; set; } = TimeSpan.FromSeconds(0.5);
     public static bool ForceHideCursor { get; set; }
+    public static float RightStickCursorDeadZone { get; set; } = 0.25f;
 
     private static double rightStickSuppressUntilMs;
     private static bool rightStickCursorAwaitingMove;
     private static double rightStickCursorAwaitMoveAfterMs;
+    private static Point lastMousePosition;
+    private static int lastMouseScrollValue;
+    private static int lastMouseHScrollValue;
+    private static bool mouseRevealArmed;
+    private static double mouseRevealIgnoreUntilMs;
+
+    private const double MouseRevealDelayMs = 75;
+    private const int MouseRevealMoveThreshold = 4;
 
     private static readonly FieldInfo GameInputField = AccessTools.Field(
         typeof(Game1),
@@ -128,7 +137,18 @@ internal static class InputPatches
     {
         var nowMs = Game1.currentGameTime?.TotalGameTime.TotalMilliseconds ?? 0;
         rightStickCursorAwaitingMove = true;
+        mouseRevealArmed = true;
         rightStickCursorAwaitMoveAfterMs = Math.Max(rightStickCursorAwaitMoveAfterMs, nowMs);
+        mouseRevealIgnoreUntilMs = Math.Max(mouseRevealIgnoreUntilMs, nowMs + MouseRevealDelayMs);
+        lastMousePosition = Game1.getMousePosition(ui_scale: true);
+    }
+
+    public static void NotifyMousePositionReset()
+    {
+        var mouseState = Game1.input.GetMouseState();
+        lastMousePosition = new Point(mouseState.X, mouseState.Y);
+        lastMouseScrollValue = mouseState.ScrollWheelValue;
+        lastMouseHScrollValue = mouseState.HorizontalScrollWheelValue;
     }
 
     public static void GetGamePadState_Postfix(ref GamePadState __result)
@@ -137,7 +157,7 @@ internal static class InputPatches
         if (
             rightStickCursorAwaitingMove
             && nowMs >= rightStickCursorAwaitMoveAfterMs
-            && __result.ThumbSticks.Right.Length() > 0.1f
+            && __result.ThumbSticks.Right.Length() > RightStickCursorDeadZone
         )
         {
             rightStickCursorAwaitingMove = false;
@@ -161,6 +181,7 @@ internal static class InputPatches
 
     public static void ShouldDrawMouseCursor_Postfix(ref bool __result)
     {
+        ClearAwaitIfMouseMoved();
         if (ForceHideCursor || rightStickCursorAwaitingMove || IsRightStickSuppressed())
         {
             __result = false;
@@ -169,7 +190,44 @@ internal static class InputPatches
 
     public static bool DrawMouseCursor_Prefix()
     {
+        ClearAwaitIfMouseMoved();
         return !ForceHideCursor && !rightStickCursorAwaitingMove && !IsRightStickSuppressed();
+    }
+
+    private static void ClearAwaitIfMouseMoved()
+    {
+        if (!rightStickCursorAwaitingMove || ForceHideCursor)
+        {
+            return;
+        }
+        var nowMs = Game1.currentGameTime?.TotalGameTime.TotalMilliseconds ?? 0;
+        var mouseState = Game1.input.GetMouseState();
+        var currentMousePosition = new Point(mouseState.X, mouseState.Y);
+        var hasButtonDown =
+            mouseState.LeftButton == ButtonState.Pressed
+            || mouseState.RightButton == ButtonState.Pressed
+            || mouseState.MiddleButton == ButtonState.Pressed
+            || mouseState.XButton1 == ButtonState.Pressed
+            || mouseState.XButton2 == ButtonState.Pressed;
+        var hasScroll =
+            mouseState.ScrollWheelValue != lastMouseScrollValue
+            || mouseState.HorizontalScrollWheelValue != lastMouseHScrollValue;
+        var hasMouseInput = hasButtonDown || hasScroll;
+        var delta = currentMousePosition - lastMousePosition;
+        var movedEnough =
+            mouseRevealArmed
+            && nowMs >= mouseRevealIgnoreUntilMs
+            && (
+                Math.Abs(delta.X) >= MouseRevealMoveThreshold
+                || Math.Abs(delta.Y) >= MouseRevealMoveThreshold
+            );
+        if (hasMouseInput || movedEnough)
+        {
+            rightStickCursorAwaitingMove = false;
+        }
+        lastMousePosition = currentMousePosition;
+        lastMouseScrollValue = mouseState.ScrollWheelValue;
+        lastMouseHScrollValue = mouseState.HorizontalScrollWheelValue;
     }
 
     private static bool IsRightStickSuppressed()

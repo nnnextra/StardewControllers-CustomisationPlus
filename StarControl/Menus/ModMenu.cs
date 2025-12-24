@@ -11,6 +11,7 @@ internal class ModMenu(
     IMenuToggle toggle,
     ModConfig config,
     ModMenuItem settingsItem,
+    ModMenuItem instantActionsItem,
     Action<ModMenuItemConfiguration> shortcutActivator,
     IInvalidatableList<IRadialMenuPage> additionalPages,
     Func<int> userPageIndexSelector,
@@ -98,16 +99,23 @@ internal class ModMenu(
                     pageConfig,
                     standaloneItems,
                     shortcutActivator,
-                    config.Items.ShowSettingsItem && pageIndex == config.Items.SettingsItemPageIndex
-                        ? InsertSettingsItem
+                    pageIndex == config.Items.SettingsItemPageIndex && config.Items.ShowSettingsItem
+                    || pageIndex == config.Items.InstantActionsItemPageIndex
+                        && config.Items.ShowInstantActionsItem
+                        ? items => InsertBuiltInItems(items, pageIndex)
                         : null
                 )
             );
             pageIndex++;
         }
-        if (userPages.Count == 0 && config.Items.ShowSettingsItem)
+        if (
+            userPages.Count == 0
+            && (config.Items.ShowSettingsItem || config.Items.ShowInstantActionsItem)
+        )
         {
-            userPages.Add(new MenuPage<IRadialMenuItem>([settingsItem], _ => false));
+            var pageItems = new List<IRadialMenuItem>();
+            InsertBuiltInItems(pageItems, pageIndex: 0);
+            userPages.Add(new MenuPage<IRadialMenuItem>(pageItems, _ => false));
         }
         var pages = new List<IRadialMenuPage>(additionalPages);
         pages.InsertRange(userPageIndexSelector(), userPages);
@@ -118,14 +126,39 @@ internal class ModMenu(
         );
         return pages;
 
-        void InsertSettingsItem(List<IRadialMenuItem> items)
+        void InsertBuiltInItems(List<IRadialMenuItem> items, int pageIndex)
         {
-            var index = Math.Clamp(config.Items.SettingsItemPositionIndex, 0, items.Count - 1);
-            items.Insert(index, settingsItem);
-            Logger.Log(
-                LogCategory.Menus,
-                $"Inserted built-in Mod Settings item at position {index}."
-            );
+            var inserts = new List<(int Index, IRadialMenuItem Item, string LogName)>();
+            if (config.Items.ShowSettingsItem && pageIndex == config.Items.SettingsItemPageIndex)
+            {
+                inserts.Add((config.Items.SettingsItemPositionIndex, settingsItem, "Mod Settings"));
+            }
+            if (
+                config.Items.ShowInstantActionsItem
+                && pageIndex == config.Items.InstantActionsItemPageIndex
+            )
+            {
+                inserts.Add(
+                    (
+                        config.Items.InstantActionsItemPositionIndex,
+                        instantActionsItem,
+                        "Instant Actions"
+                    )
+                );
+            }
+            if (inserts.Count == 0)
+            {
+                return;
+            }
+            foreach (var insert in inserts.OrderBy(entry => entry.Index))
+            {
+                var index = Math.Clamp(insert.Index, 0, items.Count);
+                items.Insert(index, insert.Item);
+                Logger.Log(
+                    LogCategory.Menus,
+                    $"Inserted built-in {insert.LogName} item at position {index}."
+                );
+            }
         }
     }
 }

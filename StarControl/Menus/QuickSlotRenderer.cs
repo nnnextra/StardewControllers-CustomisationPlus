@@ -8,6 +8,7 @@ namespace StarControl.Menus;
 internal class QuickSlotRenderer(GraphicsDevice graphicsDevice, ModConfig config)
 {
     private const float MENU_SCALE = 0.7f; // scales the entire quick action menu
+    private const float SLOT_CONTENT_SCALE = 1.2f; // scales slot visuals without moving the menu
 
     private record ButtonFlash(FlashType Type, float DurationMs, float ElapsedMs = 0);
 
@@ -53,7 +54,6 @@ internal class QuickSlotRenderer(GraphicsDevice graphicsDevice, ModConfig config
     private readonly Dictionary<SButton, ButtonFlash> flashes = [];
     private readonly HashSet<SButton> enabledSlots = [];
     private readonly Dictionary<SButton, Sprite> slotSprites = [];
-    private readonly Texture2D uiTexture = Game1.content.Load<Texture2D>(Sprites.UI_TEXTURE_PATH);
     private readonly GraphicsDevice graphicsDevice = graphicsDevice;
 
     private Color disabledBackgroundColor = Color.Transparent;
@@ -62,6 +62,8 @@ internal class QuickSlotRenderer(GraphicsDevice graphicsDevice, ModConfig config
     private float quickSlotScale = 1f;
     private Texture2D outerBackground = null!;
     private Texture2D slotBackground = null!;
+    private Texture2D? uiTexture;
+    private ButtonIconSet? uiTextureIconSet;
 
     public void Draw(SpriteBatch b, Rectangle viewport)
     {
@@ -277,7 +279,7 @@ internal class QuickSlotRenderer(GraphicsDevice graphicsDevice, ModConfig config
         }
 
         var isEnabled = enabledSlots.Contains(button);
-        var backgroundRect = GetCircleRect(origin, Scale(SLOT_SIZE / 2f));
+        var backgroundRect = GetCircleRect(origin, Scale(SLOT_SIZE * SLOT_CONTENT_SCALE / 2f));
         if (darken)
         {
             var darkenRect = backgroundRect;
@@ -291,7 +293,10 @@ internal class QuickSlotRenderer(GraphicsDevice graphicsDevice, ModConfig config
 
         if (isAssigned)
         {
-            var spriteRect = GetCircleRect(origin, Scale(IMAGE_SIZE * 1f * MENU_SCALE / 2f));
+            var spriteRect = GetCircleRect(
+                origin,
+                Scale(IMAGE_SIZE * MENU_SCALE * SLOT_CONTENT_SCALE / 2f)
+            );
             if (SlotItems.TryGetValue(button, out var item) && item.Texture is not null)
             {
                 ItemRenderer.Draw(
@@ -315,7 +320,7 @@ internal class QuickSlotRenderer(GraphicsDevice graphicsDevice, ModConfig config
 
         if (GetPromptSprite(button) is { } promptSprite)
         {
-            var promptOffset = Scale(PROMPT_OFFSET);
+            var promptOffset = Scale(PROMPT_OFFSET * SLOT_CONTENT_SCALE);
             var promptOrigin = promptPosition switch
             {
                 PromptPosition.Above => origin.AddY(-promptOffset),
@@ -327,7 +332,10 @@ internal class QuickSlotRenderer(GraphicsDevice graphicsDevice, ModConfig config
                     nameof(promptPosition)
                 ),
             };
-            var promptRect = GetCircleRect(promptOrigin, Scale(PROMPT_SIZE / 2f));
+            var promptRect = GetCircleRect(
+                promptOrigin,
+                Scale(PROMPT_SIZE * SLOT_CONTENT_SCALE / 2f)
+            );
             b.Draw(
                 promptSprite.Texture,
                 promptRect,
@@ -404,7 +412,23 @@ internal class QuickSlotRenderer(GraphicsDevice graphicsDevice, ModConfig config
         {
             return null;
         }
-        return new(uiTexture, new(columnIndex * 16, rowIndex * 16, 16, 16));
+        var texture = GetUiTexture();
+        return new(texture, new(columnIndex * 16, rowIndex * 16, 16, 16));
+    }
+
+    private Texture2D GetUiTexture()
+    {
+        var desiredSet = config.Style.ButtonIconSet;
+        if (uiTexture is null || uiTextureIconSet != desiredSet)
+        {
+            var assetPath =
+                desiredSet == ButtonIconSet.PlayStation
+                    ? Sprites.UI_PLAYSTATION_TEXTURE_PATH
+                    : Sprites.UI_TEXTURE_PATH;
+            uiTexture = Game1.content.Load<Texture2D>(assetPath);
+            uiTextureIconSet = desiredSet;
+        }
+        return uiTexture;
     }
 
     private Sprite? GetSlotSprite(IItemLookup itemLookup)

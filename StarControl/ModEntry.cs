@@ -1,6 +1,5 @@
 ﻿using System.IO;
 using System.Reflection;
-using Newtonsoft.Json.Linq;
 using StarControl.Api;
 using StarControl.Config;
 using StarControl.Data;
@@ -35,7 +34,6 @@ public class ModEntry : Mod
     private GenericModConfigSync? gmcmSync;
     private KeybindActivator keybindActivator = null!;
     private PageRegistry pageRegistry = null!;
-    private ButtonIconSet? appliedButtonIconSet;
 
     public ModEntry()
     {
@@ -49,7 +47,6 @@ public class ModEntry : Mod
         Logger.Monitor = Monitor;
         config = Helper.ReadConfig<ModConfig>();
         config.Input.ApplyLegacyThumbStickPreference();
-        ApplyButtonIconSet();
         Logger.Config = config.Debug;
         I18n.Init(helper.Translation);
         var builtInItems = new BuiltInItems(ModManifest);
@@ -99,39 +96,6 @@ public class ModEntry : Mod
         SaveRemappingFile();
     }
 
-    private void ApplyButtonIconSet()
-    {
-        var selectedSet = config.Style.ButtonIconSet;
-        if (appliedButtonIconSet == selectedSet)
-        {
-            return;
-        }
-        var spritesDir = Path.Combine(Helper.DirectoryPath, "assets", "ui", "sprites");
-        var sourceFile = Path.Combine(
-            spritesDir,
-            selectedSet == ButtonIconSet.PlayStation ? "UI.PlayStation.png" : "UI.Xbox.png"
-        );
-        var targetFile = Path.Combine(spritesDir, "UI.png");
-        if (!File.Exists(sourceFile))
-        {
-            Monitor.Log(
-                $"Button icon set '{selectedSet}' is missing at '{sourceFile}'.",
-                LogLevel.Warn
-            );
-            return;
-        }
-        try
-        {
-            File.Copy(sourceFile, targetFile, overwrite: true);
-            appliedButtonIconSet = selectedSet;
-            InvalidateButtonIconSprites();
-        }
-        catch (Exception ex)
-        {
-            Monitor.Log($"Failed to apply button icon set '{selectedSet}': {ex}", LogLevel.Warn);
-        }
-    }
-
     private void ConfigurationViewModel_Saved(object? sender, EventArgs e)
     {
         pageRegistry.InvalidateAll();
@@ -141,49 +105,6 @@ public class ModEntry : Mod
         }
         Sound.Enabled = config.Sound.EnableUiSounds;
         GamePatches.SuppressRightStickChatBox = config.Input.SuppressRightStickChatBox;
-        var previousIconSet = appliedButtonIconSet;
-        ApplyButtonIconSet();
-        if (previousIconSet != appliedButtonIconSet)
-        {
-            Monitor.Log(
-                "Button icon set updated. Close and reopen the menu if the icons don't refresh.",
-                LogLevel.Info
-            );
-        }
-    }
-
-    private void InvalidateButtonIconSprites()
-    {
-        var assetBase = $"Mods/{ModManifest.UniqueID}/Sprites/UI";
-        Helper.GameContent.InvalidateCache(assetBase);
-        Helper.GameContent.InvalidateCache(assetBase + "@data");
-        var spriteSheetPath = Path.Combine(
-            Helper.DirectoryPath,
-            "assets",
-            "ui",
-            "sprites",
-            "UI.json"
-        );
-        if (!File.Exists(spriteSheetPath))
-        {
-            return;
-        }
-        try
-        {
-            var json = JObject.Parse(File.ReadAllText(spriteSheetPath));
-            if (json["Sprites"] is not JObject sprites)
-            {
-                return;
-            }
-            foreach (var sprite in sprites.Properties())
-            {
-                Helper.GameContent.InvalidateCache($"{assetBase}:{sprite.Name}");
-            }
-        }
-        catch (Exception ex)
-        {
-            Monitor.Log($"Failed to invalidate UI sprites: {ex}", LogLevel.Warn);
-        }
     }
 
     [EventPriority(EventPriority.Low)]
@@ -418,10 +339,29 @@ public class ModEntry : Mod
                 return ItemActivationResult.Custom;
             }
         );
+        var instantActionsSprite = new Lazy<Sprite?>(Sprites.BugNet);
+        var instantActionsItem = new ModMenuItem(
+            id: "focustense.StarControl.InstantActions",
+            title: I18n.ModMenu_InstantActionsItem_Name,
+            description: I18n.ModMenu_InstantActionsItem_Description,
+            texture: () => instantActionsSprite.Value?.Texture,
+            sourceRectangle: () => instantActionsSprite.Value?.SourceRect,
+            activate: (_, _, _) =>
+            {
+                if (!ViewEngine.IsInstalled)
+                {
+                    Game1.showRedMessage(I18n.Error_MissingStardewUI());
+                    return ItemActivationResult.Ignored;
+                }
+                OpenRemappingMenu();
+                return ItemActivationResult.Custom;
+            }
+        );
         return new ModMenu(
             modMenuToggle,
             config,
             settingsItem,
+            instantActionsItem,
             ActivateModMenuItem,
             registeredPages,
             () => pageRegistry.CustomItemsPageIndex,
@@ -576,11 +516,15 @@ public class ModEntry : Mod
                 item is not InventoryMenuItem && !string.IsNullOrEmpty(item.Id)
             ),
             config.Input.RemappingMenuButton,
+            config.Input.ThumbstickDeadZone,
+            config.Style.ButtonIconSet,
             SaveRemappingSlots
         );
         context.Load(RemappingController.Slots);
+        context.InitializeLayout();
         var controller = ViewEngine.OpenRootMenu("Remapping", context);
         context.Controller = controller;
+        controller.PositionSelector = context.GetMenuPosition;
         Game1.activeClickableMenu = controller!.Menu;
     }
 

@@ -124,6 +124,8 @@
   "Config.ModMenu.RemoveItem.Description": "Remove the selected item",
   "Config.ModMenu.SettingsItem.Name": "Star Control Settings",
   "Config.ModMenu.SettingsItem.Description": "Opens this configuration menu.\n\nThis item can't be edited or removed, but can be hidden from the Mod Menu; click to toggle its visibility on/off.",
+  "Config.ModMenu.InstantActionsItem.Name": "Instant Actions",
+  "Config.ModMenu.InstantActionsItem.Description": "Opens the instant actions menu.\n\nThis item can't be edited or removed, but can be hidden from the Mod Menu; click to toggle its visibility on/off.",
   "Config.QuickActions.Heading": "Quick Actions",
   "Config.QuickActions.Items.Help": "Set your most frequently used tools and consumables here. To activate, press the associated button while the wheel is open and nothing is selected.",
   "Config.QuickActions.EmptySlot.Title": "Unassigned",
@@ -245,6 +247,8 @@
   "ModMenu.Map.Description": "Show a map of your current location",
   "ModMenu.SettingsItem.Name": "Star Control Settings",
   "ModMenu.SettingsItem.Description": "Open the configuration menu",
+  "ModMenu.InstantActionsItem.Name": "Instant Actions",
+  "ModMenu.InstantActionsItem.Description": "Open the instant actions menu",
 
   // Remapping UI
   "Remapping.InvalidItem.Description": "Item ID '{{id}}' can no longer be found in any of your menus. It may have been removed from the Actions Configuration.",

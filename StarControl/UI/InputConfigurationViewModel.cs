@@ -36,6 +36,9 @@ internal partial class InputConfigurationViewModel
     private int activationDelayMs;
 
     [Notify]
+    private ButtonIconSet buttonIconSetValue = ButtonIconSet.Xbox;
+
+    [Notify]
     private SButton inventoryMenuButton;
 
     [Notify]
@@ -113,6 +116,11 @@ internal partial class InputConfigurationViewModel
         SuppressRightStickChatBox = config.SuppressRightStickChatBox;
         TriggerDeadZone = config.TriggerDeadZone;
         ThumbstickDeadZone = config.ThumbstickDeadZone;
+    }
+
+    public void SetButtonIconSet(ButtonIconSet value)
+    {
+        ButtonIconSetValue = value;
     }
 
     public void OnAdvancedButtonHover()

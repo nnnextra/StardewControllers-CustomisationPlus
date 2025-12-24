@@ -2,9 +2,10 @@
   <PropertyGroup>
     <AssemblyName>StarControl</AssemblyName>
     <RootNamespace>StarControl</RootNamespace>
-    <Version>1.1.7-experimental.5</Version>
+    <Version>1.1.7</Version>
     <AssemblyVersion>1.1.7.0</AssemblyVersion>
     <FileVersion>1.1.7.0</FileVersion>
+    <ModFolderName>Star Control - CustomisationPlus</ModFolderName>
     <TargetFramework>net6.0</TargetFramework>
     <LangVersion>Latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -27,7 +28,13 @@
     <Content Include="assets\ui\data\Kenney.buttonspritemap.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="assets\ui\data\Kenney.PlayStation.buttonspritemap.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="assets\ui\sprites\UI.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="assets\ui\sprites\UI.PlayStation.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="assets\ui\sprites\Cursors.json">

@@ -126,17 +126,32 @@
                                    text={<>EditableDescription} />
                     </form-row>
                     <form-row title={#Config.ModMenuItem.Keybind.Title} description={#Config.ModMenuItem.Keybind.Description}>
-                        <keybind-editor background-color="#863c"
-                                        button-height="48"
-                                        opacity="0.6"
-                                        focusable="true"
-                                        empty-text={#Config.ModMenuItem.Keybind.EmptyText}
-                                        sprite-map={@Mods/focustense.StarControl/SpriteMaps/Kenney}
-                                        keybind-list={<>Keybind}
-                                        +state:enabled={CanEditKeybind}
-                                        +state:enabled:background-color="#0000"
-                                        +state:enabled:editable-type="SingleKeybind"
-                                        +state:enabled:opacity="1" />
+                        <frame *switch={ButtonIconSet} layout="stretch content">
+                            <keybind-editor *case="PlayStation"
+                                            background-color="#863c"
+                                            button-height="48"
+                                            opacity="0.6"
+                                            focusable="true"
+                                            empty-text={#Config.ModMenuItem.Keybind.EmptyText}
+                                            sprite-map={@Mods/focustense.StarControl/SpriteMaps/Kenney.PlayStation}
+                                            keybind-list={<>Keybind}
+                                            +state:enabled={CanEditKeybind}
+                                            +state:enabled:background-color="#0000"
+                                            +state:enabled:editable-type="SingleKeybind"
+                                            +state:enabled:opacity="1" />
+                            <keybind-editor *case="Xbox"
+                                            background-color="#863c"
+                                            button-height="48"
+                                            opacity="0.6"
+                                            focusable="true"
+                                            empty-text={#Config.ModMenuItem.Keybind.EmptyText}
+                                            sprite-map={@Mods/focustense.StarControl/SpriteMaps/Kenney}
+                                            keybind-list={<>Keybind}
+                                            +state:enabled={CanEditKeybind}
+                                            +state:enabled:background-color="#0000"
+                                            +state:enabled:editable-type="SingleKeybind"
+                                            +state:enabled:opacity="1" />
+                        </frame>
                     </form-row>
                     <form-row title={#Config.ModMenuItem.EnableActivationDelay.Title}
                               description={#Config.ModMenuItem.EnableActivationDelay.Description}>

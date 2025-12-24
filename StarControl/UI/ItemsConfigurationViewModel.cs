@@ -54,6 +54,9 @@ internal partial class ItemsConfigurationViewModel
     private int selectedPageSize;
 
     [Notify]
+    private ButtonIconSet buttonIconSet = ButtonIconSet.Xbox;
+
+    [Notify]
     private bool showInventoryBlanks;
 
     [Notify]
@@ -68,6 +71,19 @@ internal partial class ItemsConfigurationViewModel
         EditableName = I18n.Config_ModMenu_SettingsItem_Name(),
         EditableDescription = I18n.Config_ModMenu_SettingsItem_Description(),
         CustomIcon = Sprites.Settings(),
+        Editable = false,
+        IconType = { SelectedValue = ItemIconType.Custom },
+    };
+
+    // Instant Actions item can receive empty list for allItems because it is not editable.
+    private readonly ModMenuItemConfigurationViewModel instantActionsItem = new(
+        "focustense.StarControl.InstantActions",
+        []
+    )
+    {
+        EditableName = I18n.Config_ModMenu_InstantActionsItem_Name(),
+        EditableDescription = I18n.Config_ModMenu_InstantActionsItem_Description(),
+        CustomIcon = Sprites.BugNet(),
         Editable = false,
         IconType = { SelectedValue = ItemIconType.Custom },
     };
@@ -94,6 +110,7 @@ internal partial class ItemsConfigurationViewModel
         {
             // Clone the items so we don't get selection state leaking between pickers.
             ApiItems = ApiItems.Select(item => item.Clone()).ToList(),
+            ButtonIconSet = ButtonIconSet,
         };
         Pager.SelectedPage!.Items.Add(newItem);
         EditModMenuItem(newItem);
@@ -204,6 +221,7 @@ internal partial class ItemsConfigurationViewModel
                     )
                     {
                         ApiItems = ApiItems.Select(item => item.Clone()).ToList(),
+                        ButtonIconSet = ButtonIconSet,
                     };
                     itemViewModel.Load(itemConfig);
                     pageViewModel.Items.Add(itemViewModel);
@@ -215,21 +233,61 @@ internal partial class ItemsConfigurationViewModel
                 Pager.Pages.Add(new(0));
             }
             settingsItem.Enabled = config.ShowSettingsItem;
-            var settingsPageIndex = Math.Clamp(
-                config.SettingsItemPageIndex,
-                0,
-                Pager.Pages.Count - 1
-            );
-            var page = Pager.Pages[settingsPageIndex];
-            var settingsItemIndex = Math.Clamp(
-                config.SettingsItemPositionIndex,
-                0,
-                page.Items.Count
-            );
-            page.Items.Insert(settingsItemIndex, settingsItem);
+            settingsItem.ButtonIconSet = ButtonIconSet;
+            instantActionsItem.Enabled = config.ShowInstantActionsItem;
+            instantActionsItem.ButtonIconSet = ButtonIconSet;
+
+            InsertBuiltInItems();
 
             QuickSlots.Load(config.QuickSlots, Pager.Pages);
+
+            void InsertBuiltInItems()
+            {
+                var inserts =
+                    new List<(
+                        int PageIndex,
+                        int PositionIndex,
+                        ModMenuItemConfigurationViewModel Item
+                    )>();
+                inserts.Add(
+                    (
+                        Math.Clamp(config.SettingsItemPageIndex, 0, Pager.Pages.Count - 1),
+                        config.SettingsItemPositionIndex,
+                        settingsItem
+                    )
+                );
+                inserts.Add(
+                    (
+                        Math.Clamp(config.InstantActionsItemPageIndex, 0, Pager.Pages.Count - 1),
+                        config.InstantActionsItemPositionIndex,
+                        instantActionsItem
+                    )
+                );
+                foreach (var group in inserts.GroupBy(entry => entry.PageIndex))
+                {
+                    var page = Pager.Pages[group.Key];
+                    foreach (var entry in group.OrderBy(e => e.PositionIndex))
+                    {
+                        var itemIndex = Math.Clamp(entry.PositionIndex, 0, page.Items.Count);
+                        page.Items.Insert(itemIndex, entry.Item);
+                    }
+                }
+            }
         });
+    }
+
+    public void SetButtonIconSet(ButtonIconSet value)
+    {
+        ButtonIconSet = value;
+        settingsItem.ButtonIconSet = value;
+        instantActionsItem.ButtonIconSet = value;
+        foreach (var page in Pager.Pages)
+        {
+            foreach (var item in page.Items)
+            {
+                item.ButtonIconSet = value;
+            }
+        }
     }
 
     public bool RemoveGrabbedItem()
@@ -251,6 +309,8 @@ internal partial class ItemsConfigurationViewModel
         config.ModMenuPages.Clear();
         int settingsItemPageIndex = 0;
         int settingsItemPositionIndex = 0;
+        int instantActionsItemPageIndex = 0;
+        int instantActionsItemPositionIndex = 0;
         foreach (var page in Pager.Pages)
         {
             if (page.Items.Count == 0)
@@ -267,6 +327,12 @@ internal partial class ItemsConfigurationViewModel
                     settingsItemPositionIndex = i;
                     continue;
                 }
+                if (item == instantActionsItem)
+                {
+                    instantActionsItemPageIndex = page.Index;
+                    instantActionsItemPositionIndex = i;
+                    continue;
+                }
                 var itemConfig = new ModMenuItemConfiguration();
                 item.Save(itemConfig);
                 pageItems.Add(itemConfig);
@@ -279,6 +345,9 @@ internal partial class ItemsConfigurationViewModel
         config.ShowSettingsItem = settingsItem.Enabled;
         config.SettingsItemPageIndex = settingsItemPageIndex;
         config.SettingsItemPositionIndex = settingsItemPositionIndex;
+        config.ShowInstantActionsItem = instantActionsItem.Enabled;
+        config.InstantActionsItemPageIndex = instantActionsItemPageIndex;
+        config.InstantActionsItemPositionIndex = instantActionsItemPositionIndex;
         QuickSlots.Save(config.QuickSlots);
     }
 

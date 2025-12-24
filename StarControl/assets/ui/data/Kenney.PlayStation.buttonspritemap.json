@@ -1,0 +1,24 @@
+{
+  "KeyboardBlank": "Mods/focustense.StarControl/Sprites/UI.PlayStation:KeyboardBlank",
+  "MouseLeft": "Mods/focustense.StarControl/Sprites/UI.PlayStation:MouseButtonLeft",
+  "MouseMiddle": "Mods/focustense.StarControl/Sprites/UI.PlayStation:MouseButtonMiddle",
+  "MouseRight": "Mods/focustense.StarControl/Sprites/UI.PlayStation:MouseButtonRight",
+  "Buttons": {
+    "DPadUp": "Mods/focustense.StarControl/Sprites/UI.PlayStation:GamepadUp",
+    "DPadLeft": "Mods/focustense.StarControl/Sprites/UI.PlayStation:GamepadLeft",
+    "DPadRight": "Mods/focustense.StarControl/Sprites/UI.PlayStation:GamepadRight",
+    "DPadDown": "Mods/focustense.StarControl/Sprites/UI.PlayStation:GamepadDown",
+    "ControllerA": "Mods/focustense.StarControl/Sprites/UI.PlayStation:GamepadA",
+    "ControllerB": "Mods/focustense.StarControl/Sprites/UI.PlayStation:GamepadB",
+    "ControllerX": "Mods/focustense.StarControl/Sprites/UI.PlayStation:GamepadX",
+    "ControllerY": "Mods/focustense.StarControl/Sprites/UI.PlayStation:GamepadY",
+    "LeftTrigger": "Mods/focustense.StarControl/Sprites/UI.PlayStation:GamepadLeftTrigger",
+    "LeftShoulder": "Mods/focustense.StarControl/Sprites/UI.PlayStation:GamepadLeftButton",
+    "RightTrigger": "Mods/focustense.StarControl/Sprites/UI.PlayStation:GamepadRightTrigger",
+    "RightShoulder": "Mods/focustense.StarControl/Sprites/UI.PlayStation:GamepadRightButton",
+    "ControllerBack": "Mods/focustense.StarControl/Sprites/UI.PlayStation:GamepadView",
+    "ControllerStart": "Mods/focustense.StarControl/Sprites/UI.PlayStation:GamepadMenu",
+    "LeftStick": "Mods/focustense.StarControl/Sprites/UI.PlayStation:GamepadLeftStickPress",
+    "RightStick": "Mods/focustense.StarControl/Sprites/UI.PlayStation:GamepadRightStickPress"
+  }
+}
