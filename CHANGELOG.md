@@ -8,9 +8,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Changed
 
-- Added a safe scythe check fallback for 1.6.16 alpha compatibility (avoids hard dependency on removed method).
-- Mouse recenter now targets the tile in front of the player to avoid tool-facing flips.
-- Clear last-click on wheel close so tools follow facing direction until mouse input resumes.
+- Improved compatibility with Stardew Valley 1.6.16 alpha by avoiding a removed scythe check.
+- After closing a wheel, your tools now follow your facing direction instead of an old mouse target.
+- Mouse recentering now aims at the tile in front of your character to reduce accidental turn‑and‑swing.
 
 ---
 
@@ -18,7 +18,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Changed
 
-- Removed legacy Harmony patches for cursor methods not present in current game versions to reduce log noise.
+- Removed legacy cursor patches that no longer exist in current game versions (less log spam).
 
 ---
 
@@ -26,21 +26,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
-- PlayStation controller button prompt icon set and selector (Controls tab).
-- Instant Actions menu item in the mod wheel with visibility toggle.
-- PlayStation controller prompt spritemap and sprite sheet variants.
+- PlayStation button prompt set, with a selector on the Controls tab.
+- An Instant Actions entry in the mod wheel, plus a visibility toggle.
+- PlayStation prompt sprite sheet + mapping data.
 
 ### Changed
 
-- Instant Actions (remapping) menu layout adjusted to better fit smaller screens; middle list now scrolls with a visible scrollbar.
-- Switching controller prompt sets now reloads UI sprites in-game (close and reopen the menu if needed).
-- Control prompts and the mod-menu keybind editor now follow the selected controller prompt set.
-- Quick action menu slot content scaled up while keeping the menu size the same.
+- Instant Actions (remapping) menu fits smaller screens better; the middle list now scrolls with a visible bar.
+- Switching prompt sets reloads UI sprites (close and reopen the menu if icons don’t update).
+- Control prompts and the mod‑menu keybind editor follow the selected prompt set.
+- Quick action slots/icons/prompts are larger while the menu size stays the same.
 
 ### Fixed
 
-- Mouse/trackpad now reveals the cursor correctly after closing a wheel.
-- Defaults/Cancel/Save tooltips removed to avoid overlap on smaller screens.
+- Mouse/trackpad now re‑shows the cursor correctly after closing a wheel.
+- Defaults/Cancel/Save tooltips removed to prevent overlap on small screens.
 
 ---
 
@@ -48,43 +48,43 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Summary
 
-- Consolidated release with all changes from prior CustomisationPlus builds.
+- Consolidated release with all CustomisationPlus changes to date.
 
 ### Added
 
-- Separate thumbstick navigation options for the item wheel and mod wheel.
-- Added a "Both" thumbstick option for wheel navigation.
-- Backward-compatible binding so older config layouts still show a navigation selector.
-- Customization controls for item name/description size and visibility.
-- Sliders for vertical and horizontal radial menu position.
-- Toggle and size slider for quick action menus.
-- Scrollable config menu pages with visible scrollbars.
+- Separate thumbstick options for the item wheel vs. mod wheel.
+- A “Both” thumbstick option for wheel navigation.
+- Backward‑compatible binding so older configs still show a navigation selector.
+- Item name/description visibility toggles + size sliders.
+- Vertical + horizontal radial menu position sliders.
+- Quick action menu visibility toggle + size slider.
+- Scrollable config pages with visible scrollbars.
 
 ### Changed
 
-- Reduced radial menu size and lowered on-screen position for a less intrusive UI.
-- Reduced quick action menu sizes to match main radial menus.
-- Removed full-screen background fade when radial menus are opened.
-- Improved radial menu preview layout and centering.
-- Sharper item name rendering at small scales.
-- Updated default configuration values to match the new UI tuning.
-- Config menu now centers on most tabs and slides left on the Style tab to make room for the preview.
-- Config menu slide animation smoothed for better readability.
-- Preserves vanilla health/stamina/time HUD while hiding only the toolbar.
-- Instant actions now support held tool use for continuous action.
-- Improved controller cursor behavior after closing a wheel (suppresses flicker and unwanted movement).
-- Reset mouse position to the player when opening/closing the wheel.
-- Refined config menu layout to fit better on smaller screens.
+- Radial menus are smaller and lower on screen so they’re less intrusive.
+- Quick action menus are resized to match the main wheel.
+- Full‑screen background fade removed when wheels open.
+- Radial menu preview layout and centering improved.
+- Small‑scale item name text looks sharper.
+- Default config values updated to match the new UI tuning.
+- Config menu centers on most tabs and slides left on the Style tab to make room for the preview.
+- Config menu slide animation smoothed for readability.
+- Health/stamina/time HUD stays visible; only the toolbar hides.
+- Instant Actions now support holding the button for continuous use.
+- Controller cursor behavior improved after closing a wheel (less flicker/movement).
+- Mouse position resets to the player when opening/closing a wheel.
+- Config menu layout refined to fit smaller screens.
 
 ### Fixed
 
-- In-game config menu scaling on smaller screens (incl. 1280x800).
-- Preview rendering at sub-1.0 text scale.
-- Truncated item names in the radial menu center label.
-- Slingshot (and modded bows) assignment to quick actions.
-- Right-stick scrolling now works across all config tabs without cursor snapping.
-- Cursor stays hidden when opening/closing radial menus to prevent pop-in.
-- Hot reload source sync no longer crashes when source paths are unavailable.
+- Config menu fits on smaller screens (incl. 1280×800).
+- Preview renders correctly at text scales below 1.0.
+- Center‑label item names no longer get cut off.
+- Slingshot (and modded bows) can be assigned to quick actions.
+- Right‑stick scrolling works across all config tabs without snapping to tabs.
+- Cursor stays hidden when opening/closing wheels to prevent pop‑in.
+- Hot‑reload source sync no longer crashes when source paths are unavailable.
 - GMCM keybinding sync now skips cleanly when the extension DLL is missing.
-- Config menu position flicker when opening the menu.
-- Fixed radial menu preview not showing properly in the Style tab of in-game config menu.
+- Config menu position flicker on open.
+- Radial menu preview now shows properly on the Style tab.
