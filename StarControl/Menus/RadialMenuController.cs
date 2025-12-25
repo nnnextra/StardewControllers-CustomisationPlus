@@ -1,6 +1,7 @@
 using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using StarControl.Config;
 using StarControl.Graphics;
 using StarControl.Input;
@@ -49,6 +50,8 @@ internal class RadialMenuController(
 
     private const int MENU_ANIMATION_DURATION_MS = 120;
     private const int QUICK_SLOT_ANIMATION_DURATION_MS = 250;
+    private const int MOUSE_MOVE_THRESHOLD = 6;
+    private const float MOUSE_ANGLE_SPEED = 0.012f;
 
     private IRadialMenu? activeMenu;
     private float? cursorAngle;
@@ -60,6 +63,13 @@ internal class RadialMenuController(
     private float menuOpenTimeMs;
     private float menuScale;
     private float quickSlotOpacity;
+    private bool mouseNavigationActive;
+    private float mouseAngleAccumulator;
+    private Point lastMousePosition;
+    private ButtonState lastMouseLeftButton;
+    private ButtonState lastMouseRightButton;
+    private bool mousePrimaryClick;
+    private bool mouseSecondaryClick;
     private bool? previousMouseVisible;
     private bool usedRightStickInMenu;
     private bool? previousDisplayHud;
@@ -173,6 +183,12 @@ internal class RadialMenuController(
                 InputPatches.ForceHideCursor = true;
                 ResetMouseToPlayer();
                 InputPatches.NotifyMousePositionReset();
+                mouseNavigationActive = false;
+                mouseAngleAccumulator = 0f;
+                lastMousePosition = Game1.getMousePosition(ui_scale: true);
+                var mouseState = Game1.input.GetMouseState();
+                lastMouseLeftButton = mouseState.LeftButton;
+                lastMouseRightButton = mouseState.RightButton;
                 AnimateMenuOpen(elapsed); // Skip "zero" frame
             }
         }
@@ -183,6 +199,10 @@ internal class RadialMenuController(
         }
         var forceHideCursor =
             menus.Any(menu => menu.Toggle.State != MenuToggleState.Off) || menuOpenTimeMs > 0;
+        if (config.Input.EnableMouseWheelNavigation && mouseNavigationActive)
+        {
+            forceHideCursor = false;
+        }
         InputPatches.ForceHideCursor = forceHideCursor;
         if (forceHideCursor)
         {
@@ -205,6 +225,27 @@ internal class RadialMenuController(
         if (focusedItem is null)
         {
             return;
+        }
+        if (config.Input.EnableMouseWheelNavigation && mouseNavigationActive)
+        {
+            if (mousePrimaryClick)
+            {
+                Logger.Log(
+                    LogCategory.Menus,
+                    $"Primary activation triggered for {focusedItem.Title}."
+                );
+                ActivateItem(focusedItem, ItemActivationType.Primary);
+                return;
+            }
+            if (mouseSecondaryClick)
+            {
+                Logger.Log(
+                    LogCategory.Menus,
+                    $"Secondary activation triggered for {focusedItem.Title}."
+                );
+                ActivateItem(focusedItem, ItemActivationType.Secondary);
+                return;
+            }
         }
         if (
             SuppressIfPressed(config.Input.PrimaryActionButton)
@@ -352,6 +393,10 @@ internal class RadialMenuController(
         focusedIndex = -1;
         focusedItem = null;
         cursorAngle = null;
+        mouseNavigationActive = false;
+        mousePrimaryClick = false;
+        mouseSecondaryClick = false;
+        mouseAngleAccumulator = 0f;
         RestoreHudState();
         if (usedRightStickInMenu)
         {
@@ -641,10 +686,76 @@ internal class RadialMenuController(
                 usedRightStickInMenu = true;
             }
         }
-        float? angle =
-            position.Length() > config.Input.ThumbstickDeadZone
-                ? MathF.Atan2(position.X, position.Y)
-                : null;
+        mousePrimaryClick = false;
+        mouseSecondaryClick = false;
+        float? mouseAngle = null;
+        if (config.Input.EnableMouseWheelNavigation)
+        {
+            var mousePos = Game1.getMousePosition(ui_scale: true);
+            var delta = mousePos - lastMousePosition;
+            var movedEnough =
+                Math.Abs(delta.X) >= MOUSE_MOVE_THRESHOLD
+                || Math.Abs(delta.Y) >= MOUSE_MOVE_THRESHOLD;
+            if (movedEnough)
+            {
+                mouseNavigationActive = true;
+                if (cursorAngle is not null)
+                {
+                    mouseAngleAccumulator = cursorAngle.Value;
+                }
+            }
+            if (position.Length() > config.Input.ThumbstickDeadZone)
+            {
+                mouseNavigationActive = false;
+            }
+            if (mouseNavigationActive)
+            {
+                var center = GetMenuCenter(Viewports.DefaultViewport);
+                var direction = new Vector2(
+                    lastMousePosition.X - center.X,
+                    center.Y - lastMousePosition.Y
+                );
+                if (direction.LengthSquared() < 1f)
+                {
+                    direction = new Vector2(
+                        MathF.Sin(mouseAngleAccumulator),
+                        MathF.Cos(mouseAngleAccumulator)
+                    );
+                }
+                direction.Normalize();
+                var tangent = new Vector2(direction.Y, -direction.X);
+                var tangentialMove = delta.X * tangent.X + (-delta.Y) * tangent.Y;
+                mouseAngleAccumulator += tangentialMove * MOUSE_ANGLE_SPEED;
+                mouseAngle = mouseAngleAccumulator;
+                InputPatches.AllowMouseCursorReveal();
+            }
+            var mouseState = Game1.input.GetMouseState();
+            if (mouseNavigationActive)
+            {
+                mousePrimaryClick =
+                    lastMouseLeftButton == ButtonState.Released
+                    && mouseState.LeftButton == ButtonState.Pressed;
+                mouseSecondaryClick =
+                    lastMouseRightButton == ButtonState.Released
+                    && mouseState.RightButton == ButtonState.Pressed;
+            }
+            lastMouseLeftButton = mouseState.LeftButton;
+            lastMouseRightButton = mouseState.RightButton;
+            lastMousePosition = mousePos;
+        }
+        else
+        {
+            mouseNavigationActive = false;
+        }
+        float? angle = null;
+        if (mouseNavigationActive && mouseAngle is not null)
+        {
+            angle = mouseAngle;
+        }
+        else if (position.Length() > config.Input.ThumbstickDeadZone)
+        {
+            angle = MathF.Atan2(position.X, position.Y);
+        }
         cursorAngle = (angle + MathHelper.TwoPi) % MathHelper.TwoPi;
         if (cursorAngle is not null && menu.GetSelectedPage() is { Items.Count: > 0 } page)
         {
@@ -689,6 +800,15 @@ internal class RadialMenuController(
             return right;
         }
         return left;
+    }
+
+    private Vector2 GetMenuCenter(Rectangle viewport)
+    {
+        var centerX =
+            viewport.X + viewport.Width / 2.0f + viewport.Width * config.Style.MenuHorizontalOffset;
+        var centerY =
+            viewport.Y + viewport.Height / 2.0f + viewport.Height * config.Style.MenuVerticalOffset;
+        return new Vector2(centerX, centerY);
     }
 
     private static void ResetMouseToPlayer()

@@ -80,6 +80,9 @@ internal partial class InputConfigurationViewModel
     [Notify]
     private float thumbstickDeadZone;
 
+    [Notify]
+    private bool enableMouseWheelNavigation;
+
     public InputConfigurationViewModel()
     {
         ToggleMode.ValueChanged += ToggleMode_ValueChanged;
@@ -116,6 +119,7 @@ internal partial class InputConfigurationViewModel
         SuppressRightStickChatBox = config.SuppressRightStickChatBox;
         TriggerDeadZone = config.TriggerDeadZone;
         ThumbstickDeadZone = config.ThumbstickDeadZone;
+        EnableMouseWheelNavigation = config.EnableMouseWheelNavigation;
     }
 
     public void SetButtonIconSet(ButtonIconSet value)
@@ -156,5 +160,6 @@ internal partial class InputConfigurationViewModel
         config.SuppressRightStickChatBox = SuppressRightStickChatBox;
         config.TriggerDeadZone = TriggerDeadZone;
         config.ThumbstickDeadZone = ThumbstickDeadZone;
+        config.EnableMouseWheelNavigation = EnableMouseWheelNavigation;
     }
 }

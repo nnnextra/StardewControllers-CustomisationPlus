@@ -151,6 +151,12 @@ internal static class InputPatches
         lastMouseHScrollValue = mouseState.HorizontalScrollWheelValue;
     }
 
+    public static void AllowMouseCursorReveal()
+    {
+        rightStickCursorAwaitingMove = false;
+        mouseRevealArmed = false;
+    }
+
     public static void GetGamePadState_Postfix(ref GamePadState __result)
     {
         var nowMs = Game1.currentGameTime?.TotalGameTime.TotalMilliseconds ?? 0;

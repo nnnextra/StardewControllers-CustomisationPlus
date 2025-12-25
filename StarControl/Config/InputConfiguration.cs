@@ -68,6 +68,11 @@ public class InputConfiguration : IConfigEquatable<InputConfiguration>
         ThumbStickPreference.AlwaysLeft;
 
     /// <summary>
+    /// Whether mouse/trackpad movement can be used to navigate radial menus.
+    /// </summary>
+    public bool EnableMouseWheelNavigation { get; set; }
+
+    /// <summary>
     /// Whether the <see cref="InventoryMenuButton"/> or <see cref="ModMenuButton"/> are used to
     /// hold the menu open (default) or toggle it on/off.
     /// </summary>
@@ -195,6 +200,7 @@ public class InputConfiguration : IConfigEquatable<InputConfiguration>
             && ThumbStickPreference == other.ThumbStickPreference
             && InventoryThumbStickPreference == other.InventoryThumbStickPreference
             && ModMenuThumbStickPreference == other.ModMenuThumbStickPreference
+            && EnableMouseWheelNavigation == other.EnableMouseWheelNavigation
             && ToggleMode == other.ToggleMode
             && RemappingMenuButton == other.RemappingMenuButton
             && RemappingHudButton == other.RemappingHudButton

@@ -38,6 +38,10 @@
             <enum-segments *context={:ButtonIconSet} />
         </form-row>
     </lane>
+    <form-row title={#Config.Keybind.MouseNavigation.Title}
+              description={#Config.Keybind.MouseNavigation.Description}>
+        <checkbox margin="0, 4" is-checked={<>EnableMouseWheelNavigation} />
+    </form-row>
     <form-heading title={#Config.Selection.Heading} />
     <form-row title={#Config.Keybind.PrimaryActivation.Title}
               description={#Config.Keybind.PrimaryActivation.Description}>

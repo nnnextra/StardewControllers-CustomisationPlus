@@ -30,6 +30,8 @@
   "Config.Keybind.InventoryNavigation.Description": "Choose which thumbstick controls the item wheel selection.",
   "Config.Keybind.ModNavigation.Title": "Mod menu navigation",
   "Config.Keybind.ModNavigation.Description": "Choose which thumbstick controls the mod wheel selection.",
+  "Config.Keybind.MouseNavigation.Title": "Mouse wheel navigation",
+  "Config.Keybind.MouseNavigation.Description": "Allow mouse/trackpad movement to select items while a wheel is open.",
   "Config.Keybind.PreviousPage.Title": "Previous Page",
   "Config.Keybind.PreviousPage.Description": "Which button cycles to the previous page of the active menu.",
   "Config.Keybind.NextPage.Title": "Next Page",
