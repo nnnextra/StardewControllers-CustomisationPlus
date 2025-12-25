@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Changed
 
-- Hotfix: rebuilt against Stardew Valley 1.6.15 assemblies so the mod loads on the stable game version.
+- Hotfix: fixed crash on start up.
 
 ---
 
