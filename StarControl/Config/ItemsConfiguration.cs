@@ -122,66 +122,7 @@ public class ItemsConfiguration : IConfigEquatable<ItemsConfiguration>
     /// supported for quick slots. Other buttons will be ignored.
     /// </para>
     /// </remarks>
-    public Dictionary<SButton, QuickSlotConfiguration> QuickSlots { get; set; } =
-        new()
-        {
-            [SButton.DPadDown] = new()
-            {
-                IdType = ItemIdType.GameItem,
-                Id = "(W)DN.SnS_Bow",
-                RequireConfirmation = false,
-                UseSecondaryAction = false,
-            },
-            [SButton.DPadLeft] = new()
-            {
-                IdType = ItemIdType.GameItem,
-                Id = "(T)Pickaxe",
-                RequireConfirmation = false,
-                UseSecondaryAction = false,
-            },
-            [SButton.DPadRight] = new()
-            {
-                IdType = ItemIdType.GameItem,
-                Id = "(T)Axe",
-                RequireConfirmation = false,
-                UseSecondaryAction = false,
-            },
-            [SButton.DPadUp] = new()
-            {
-                IdType = ItemIdType.GameItem,
-                Id = "(W)4",
-                RequireConfirmation = false,
-                UseSecondaryAction = false,
-            },
-            [SButton.ControllerB] = new()
-            {
-                IdType = ItemIdType.GameItem,
-                Id = "(O)688",
-                RequireConfirmation = false,
-                UseSecondaryAction = false,
-            },
-            [SButton.ControllerY] = new()
-            {
-                IdType = ItemIdType.GameItem,
-                Id = "(T)WateringCan",
-                RequireConfirmation = false,
-                UseSecondaryAction = false,
-            },
-            [SButton.ControllerA] = new()
-            {
-                IdType = ItemIdType.GameItem,
-                Id = "(T)Shears",
-                RequireConfirmation = false,
-                UseSecondaryAction = false,
-            },
-            [SButton.ControllerX] = new()
-            {
-                IdType = ItemIdType.GameItem,
-                Id = "(O)395",
-                RequireConfirmation = false,
-                UseSecondaryAction = false,
-            },
-        };
+    public Dictionary<SButton, QuickSlotConfiguration> QuickSlots { get; set; } = new();
 
     /// <inheritdoc />
     public bool Equals(ItemsConfiguration? other)
