@@ -35,7 +35,7 @@ public class InputConfiguration : IConfigEquatable<InputConfiguration>
     /// <see cref="PrimaryActionButton"/>.
     /// </summary>
     public ItemActivationMethod PrimaryActivationMethod { get; set; } =
-        ItemActivationMethod.TriggerRelease;
+        ItemActivationMethod.Keybind;
 
     /// <summary>
     /// Button to perform the secondary action on the selected menu item (typically "select").
@@ -47,7 +47,7 @@ public class InputConfiguration : IConfigEquatable<InputConfiguration>
     /// <see cref="SecondaryActionButton"/>.
     /// </summary>
     public ItemActivationMethod SecondaryActivationMethod { get; set; } =
-        ItemActivationMethod.Keybind;
+        ItemActivationMethod.TriggerRelease;
 
     /// <summary>
     /// Selects which thumbstick is used to navigate the wheel after opening.
