@@ -51,7 +51,8 @@ internal class RadialMenuController(
     private const int MENU_ANIMATION_DURATION_MS = 120;
     private const int QUICK_SLOT_ANIMATION_DURATION_MS = 250;
     private const int MOUSE_MOVE_THRESHOLD = 6;
-    private const float MOUSE_ANGLE_SPEED = 0.012f;
+    private const float MOUSE_ABS_RADIUS_RATIO = 0.1f;
+    private const float MOUSE_ABS_DELTA_THRESHOLD = 1f;
 
     private IRadialMenu? activeMenu;
     private float? cursorAngle;
@@ -691,6 +692,7 @@ internal class RadialMenuController(
         float? mouseAngle = null;
         if (config.Input.EnableMouseWheelNavigation)
         {
+            var wasMouseNavigationActive = mouseNavigationActive;
             var mousePos = Game1.getMousePosition(ui_scale: true);
             var delta = mousePos - lastMousePosition;
             var movedEnough =
@@ -699,7 +701,7 @@ internal class RadialMenuController(
             if (movedEnough)
             {
                 mouseNavigationActive = true;
-                if (cursorAngle is not null)
+                if (!wasMouseNavigationActive && cursorAngle is not null)
                 {
                     mouseAngleAccumulator = cursorAngle.Value;
                 }
@@ -711,21 +713,22 @@ internal class RadialMenuController(
             if (mouseNavigationActive)
             {
                 var center = GetMenuCenter(Viewports.DefaultViewport);
-                var direction = new Vector2(
-                    lastMousePosition.X - center.X,
-                    center.Y - lastMousePosition.Y
-                );
-                if (direction.LengthSquared() < 1f)
+                var cur = new Vector2(mousePos.X - center.X, center.Y - mousePos.Y);
+                var outerRadius = Math.Max(1f, config.Style.OuterRadius * menuScale);
+                var absRadius = Math.Max(8f, outerRadius * MOUSE_ABS_RADIUS_RATIO);
+                var deltaLength = new Vector2(delta.X, delta.Y).Length();
+                if (cur.LengthSquared() < 1f)
                 {
-                    direction = new Vector2(
+                    cur = new Vector2(
                         MathF.Sin(mouseAngleAccumulator),
                         MathF.Cos(mouseAngleAccumulator)
                     );
                 }
-                direction.Normalize();
-                var tangent = new Vector2(direction.Y, -direction.X);
-                var tangentialMove = delta.X * tangent.X + (-delta.Y) * tangent.Y;
-                mouseAngleAccumulator += tangentialMove * MOUSE_ANGLE_SPEED;
+                if (cur.Length() >= absRadius || deltaLength >= MOUSE_ABS_DELTA_THRESHOLD)
+                {
+                    cur.Normalize();
+                    mouseAngleAccumulator = MathF.Atan2(cur.X, cur.Y);
+                }
                 mouseAngle = mouseAngleAccumulator;
                 InputPatches.AllowMouseCursorReveal();
             }
@@ -807,7 +810,7 @@ internal class RadialMenuController(
         var centerX =
             viewport.X + viewport.Width / 2.0f + viewport.Width * config.Style.MenuHorizontalOffset;
         var centerY =
-            viewport.Y + viewport.Height / 2.0f + viewport.Height * config.Style.MenuVerticalOffset;
+            viewport.Y + viewport.Height / 2.0f - viewport.Height * config.Style.MenuVerticalOffset;
         return new Vector2(centerX, centerY);
     }
 

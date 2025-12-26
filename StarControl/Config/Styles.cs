@@ -180,6 +180,11 @@ public class Styles : IConfigEquatable<Styles>
     public float MenuVerticalOffset { get; set; } = 0.3f;
 
     /// <summary>
+    /// Whether vertical offset has been migrated to the inverted direction.
+    /// </summary>
+    public bool MenuVerticalOffsetInverted { get; set; }
+
+    /// <summary>
     /// Horizontal offset for the radial menu relative to the viewport width.
     /// </summary>
     public float MenuHorizontalOffset { get; set; } = 0.0f;
@@ -234,6 +239,7 @@ public class Styles : IConfigEquatable<Styles>
             && ShowSelectionTitle == other.ShowSelectionTitle
             && ShowSelectionDescription == other.ShowSelectionDescription
             && MenuVerticalOffset.Equals(other.MenuVerticalOffset)
+            && MenuVerticalOffsetInverted == other.MenuVerticalOffsetInverted
             && MenuHorizontalOffset.Equals(other.MenuHorizontalOffset)
             && ShowQuickActions == other.ShowQuickActions
             && QuickActionScale.Equals(other.QuickActionScale)

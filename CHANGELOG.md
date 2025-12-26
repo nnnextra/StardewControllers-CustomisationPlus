@@ -4,11 +4,25 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.1.10-dev.2] - 2025-12-25
+## [1.1.10-dev.14] - 2025-12-25
 
 ### Added
 
 - Experimental: optional mouse/trackpad navigation for radial wheels (selection + click activation).
+- Mouse wheel rotation feel refined to reduce direction “bounce.”
+- Added hybrid mouse mode: small moves rotate, larger moves snap to direction.
+- Increased mouse responsiveness for both rotate and snap modes.
+- Switched to absolute-direction mouse selection for more direct swipes.
+- Increased small-trackpad sensitivity for tiny circular motions.
+- Pushed absolute-direction sensitivity even lower for ultra-small trackpads.
+- Vertical position slider range increased to ±50% and direction inverted.
+- Added default Mod Menu items (Main Menu, Map, Journal, Mailbox, Crafting).
+- Added one-time migration to preserve vertical offset positions after direction flip.
+- Fixed vertical position label showing “-0%” at zero.
+
+### Changed
+
+- Reposition overlay: heading moved to the top, help text moved below Save/Cancel, and crosshair lines dimmed.
 
 ---
 

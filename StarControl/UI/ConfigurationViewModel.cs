@@ -1,11 +1,14 @@
 ﻿using System.Collections;
 using System.ComponentModel;
+using System.Globalization;
+using System.Linq;
 using System.Reflection;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using PropertyChanged.SourceGenerator;
 using StarControl.Config;
+using StardewValley.Menus;
 
 namespace StarControl.UI;
 
@@ -32,6 +35,8 @@ internal partial class ConfigurationViewModel : IDisposable
     public bool Dismissed { get; set; }
     public InputConfigurationViewModel Input { get; } = new();
     public bool IsNavigationDisabled => !IsNavigationEnabled;
+
+    public bool IsNotRepositioning => !IsRepositioning;
     public ItemsConfigurationViewModel Items { get; } = new();
     public ModIntegrationsViewModel Mods { get; }
     public PagerViewModel<NavPageViewModel> Pager { get; } = new();
@@ -47,10 +52,16 @@ internal partial class ConfigurationViewModel : IDisposable
     private bool isNavigationEnabled = true;
 
     [Notify]
+    private bool isRepositioning;
+
+    [Notify]
     private string menuLayout = $"{BaseMenuWidth}px {BaseMenuHeight}px";
 
     [Notify]
     private string previewLayout = $"{PreviewMaxSize}px";
+
+    [Notify]
+    private string repositionPreviewTransform = "";
 
     [Notify]
     private bool isPreviewEnabled = true;
@@ -68,8 +79,27 @@ internal partial class ConfigurationViewModel : IDisposable
     private float slideTargetX;
     private double slideStartMs;
     private bool isSliding;
+    private float repositionStartHorizontal;
+    private float repositionStartVertical;
+    private float repositionOriginalHorizontal;
+    private float repositionOriginalVertical;
+    private Vector2 repositionDragStart;
+    private bool repositionDragging;
+    private double lastRepositionStickMs;
+    private string? repositionMenuLayout;
+    private int repositionMenuWidth;
+    private int repositionMenuHeight;
+    private int repositionMenuX;
+    private int repositionMenuY;
+    private int repositionControllerWidth;
+    private int repositionControllerHeight;
+    private bool repositionControllerCaptured;
+    private Vector2 repositionContentPanelSize;
+    private double lastRepositionDragMs;
     private double lastRightStickScrollMs;
     private bool menuPositionInitialized;
+    private bool? previousDisplayHud;
+    private Toolbar? hiddenToolbar;
 
     public int MenuWidth { get; private set; } = BaseMenuWidth;
     public int MenuHeight { get; private set; } = BaseMenuHeight;
@@ -99,6 +129,7 @@ internal partial class ConfigurationViewModel : IDisposable
         ];
         Pager.PropertyChanged += Pager_PropertyChanged;
         Items.PropertyChanged += Items_PropertyChanged;
+        Style.PropertyChanged += Style_PropertyChanged;
         Style.ButtonIconSet.ValueChanged += (_, _) =>
         {
             var iconSet = Style.ButtonIconSet.SelectedValue;
@@ -169,8 +200,106 @@ internal partial class ConfigurationViewModel : IDisposable
         controller.DimmingAmount = 0.5f;
     }
 
+    public void BeginReposition()
+    {
+        if (IsRepositioning)
+        {
+            return;
+        }
+        PrepareRepositionLayout();
+        repositionOriginalHorizontal = Style.MenuHorizontalOffset;
+        repositionOriginalVertical = Style.MenuVerticalOffset;
+        repositionStartHorizontal = Style.MenuHorizontalOffset;
+        repositionStartVertical = Style.MenuVerticalOffset;
+        repositionDragging = false;
+        IsNavigationEnabled = false;
+        IsRepositioning = true;
+        PrepareHudForReposition();
+        UpdateRepositionTransform();
+    }
+
+    public void ConfirmReposition()
+    {
+        if (!IsRepositioning || ShouldSuppressRepositionConfirm())
+        {
+            return;
+        }
+        EndReposition();
+    }
+
+    public void CancelReposition()
+    {
+        if (!IsRepositioning)
+        {
+            return;
+        }
+        Style.MenuHorizontalOffset = repositionOriginalHorizontal;
+        Style.MenuVerticalOffset = repositionOriginalVertical;
+        EndReposition();
+    }
+
+    public bool HandleRepositionButton(SButton button)
+    {
+        if (!IsRepositioning)
+        {
+            return false;
+        }
+        if (button is SButton.ControllerA or SButton.ControllerX)
+        {
+            ConfirmReposition();
+            return true;
+        }
+        if (button is SButton.Escape or SButton.ControllerB)
+        {
+            CancelReposition();
+            return true;
+        }
+        return false;
+    }
+
+    public void BeginRepositionDrag(Vector2 position)
+    {
+        if (!IsRepositioning)
+        {
+            return;
+        }
+        repositionDragging = true;
+        repositionDragStart = position;
+        repositionStartHorizontal = Style.MenuHorizontalOffset;
+        repositionStartVertical = Style.MenuVerticalOffset;
+    }
+
+    public void RepositionDrag(Vector2 position)
+    {
+        if (!IsRepositioning || !repositionDragging)
+        {
+            return;
+        }
+        var viewport = Game1.uiViewport;
+        var delta = position - repositionDragStart;
+        var nextHorizontal = repositionStartHorizontal + delta.X / viewport.Width;
+        var nextVertical = repositionStartVertical - delta.Y / viewport.Height;
+        Style.MenuHorizontalOffset = SnapOffset(Math.Clamp(nextHorizontal, -0.5f, 0.5f));
+        Style.MenuVerticalOffset = SnapOffset(Math.Clamp(nextVertical, -0.5f, 0.5f));
+        UpdateRepositionTransform();
+    }
+
+    public void EndRepositionDrag(Vector2 position)
+    {
+        if (!IsRepositioning || !repositionDragging)
+        {
+            return;
+        }
+        repositionDragging = false;
+        lastRepositionDragMs = GetNowMs();
+    }
+
     public Point GetMenuPosition()
     {
+        if (IsRepositioning)
+        {
+            return Point.Zero;
+        }
         var viewport = Game1.uiViewport;
         var targetX = GetTargetMenuX(viewport);
         if (!menuPositionInitialized)
@@ -227,6 +356,8 @@ internal partial class ConfigurationViewModel : IDisposable
     {
         UpdateMenuPosition();
         ClampMouseToMenuWhileScrolling();
+        UpdateRepositionFromMouseDrag();
+        UpdateRepositionFromStick();
         if (loadingPageIndex >= Pager.Pages.Count)
         {
             return;
@@ -279,6 +410,248 @@ internal partial class ConfigurationViewModel : IDisposable
             {
                 Controller?.ClearCursorAttachment();
             }
+        }
+    }
+
+    private void Style_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (!IsRepositioning)
+        {
+            return;
+        }
+        if (
+            e.PropertyName
+            is nameof(StyleConfigurationViewModel.MenuHorizontalOffset)
+                or nameof(StyleConfigurationViewModel.MenuVerticalOffset)
+        )
+        {
+            UpdateRepositionTransform();
+        }
+    }
+
+    private void OnIsRepositioningChanged(bool oldValue, bool newValue)
+    {
+        OnPropertyChanged(new(nameof(IsNotRepositioning)));
+    }
+
+    private void UpdateRepositionTransform()
+    {
+        var viewport = Game1.uiViewport;
+        var offsetX = viewport.Width * Style.MenuHorizontalOffset;
+        var offsetY = -viewport.Height * Style.MenuVerticalOffset;
+        RepositionPreviewTransform =
+            $"translateX: {offsetX.ToString("0.##", CultureInfo.InvariantCulture)}; "
+            + $"translateY: {offsetY.ToString("0.##", CultureInfo.InvariantCulture)}";
+    }
+
+    private void UpdateRepositionFromStick()
+    {
+        if (!IsRepositioning || repositionDragging)
+        {
+            return;
+        }
+        var nowMs = Game1.currentGameTime?.TotalGameTime.TotalMilliseconds ?? 0;
+        var elapsedMs = nowMs - lastRepositionStickMs;
+        if (elapsedMs <= 0)
+        {
+            lastRepositionStickMs = nowMs;
+            return;
+        }
+        lastRepositionStickMs = nowMs;
+        var state = Game1.input.GetGamePadState();
+        if (!state.IsConnected)
+        {
+            return;
+        }
+        var stick = state.ThumbSticks.Right;
+        var deadZone = config.Input.ThumbstickDeadZone;
+        var magnitude = stick.Length();
+        if (magnitude <= deadZone)
+        {
+            return;
+        }
+        var intensity = Math.Clamp((magnitude - deadZone) / (1f - deadZone), 0f, 1f);
+        var speed = 0.6f; // fraction of screen per second at full tilt
+        var deltaSeconds = (float)(elapsedMs / 1000.0);
+        var scale = speed * intensity * deltaSeconds;
+        var nextHorizontal =
+            Style.MenuHorizontalOffset + (stick.X / MathF.Max(0.001f, magnitude)) * scale;
+        var nextVertical =
+            Style.MenuVerticalOffset + (stick.Y / MathF.Max(0.001f, magnitude)) * scale;
+        Style.MenuHorizontalOffset = ApplyRepositionSnap(
+            Math.Clamp(nextHorizontal, -0.5f, 0.5f),
+            magnitude
+        );
+        Style.MenuVerticalOffset = ApplyRepositionSnap(
+            Math.Clamp(nextVertical, -0.5f, 0.5f),
+            magnitude
+        );
+        UpdateRepositionTransform();
+    }
+
+    private void UpdateRepositionFromMouseDrag()
+    {
+        if (!IsRepositioning)
+        {
+            return;
+        }
+        var mouseState = Game1.input.GetMouseState();
+        var mousePosition = Game1.getMousePosition(ui_scale: true).ToVector2();
+        var leftDown = mouseState.LeftButton == ButtonState.Pressed;
+        if (!repositionDragging)
+        {
+            if (leftDown && IsMouseOverRepositionPreview(mousePosition))
+            {
+                BeginRepositionDrag(mousePosition);
+            }
+            return;
+        }
+        if (leftDown)
+        {
+            RepositionDrag(mousePosition);
+        }
+        else
+        {
+            EndRepositionDrag(mousePosition);
+        }
+    }
+
+    private bool IsMouseOverRepositionPreview(Vector2 mousePosition)
+    {
+        var viewport = Game1.uiViewport;
+        var offsetX = viewport.Width * Style.MenuHorizontalOffset;
+        var offsetY = -viewport.Height * Style.MenuVerticalOffset;
+        var previewHalf = PreviewWidth / 2f;
+        var center = new Vector2(viewport.Width / 2f + offsetX, viewport.Height / 2f + offsetY);
+        return Math.Abs(mousePosition.X - center.X) <= previewHalf
+            && Math.Abs(mousePosition.Y - center.Y) <= previewHalf;
+    }
+
+    private static float ApplyRepositionSnap(float value, float stickMagnitude)
+    {
+        const float snapThreshold = 0.02f;
+        const float snapRelease = 0.35f;
+        if (MathF.Abs(value) < snapThreshold && stickMagnitude < snapRelease)
+        {
+            return 0f;
+        }
+        return value;
+    }
+
+    private void EndReposition()
+    {
+        IsRepositioning = false;
+        IsNavigationEnabled = true;
+        RestoreHudAfterReposition();
+        RestoreRepositionLayout();
+    }
+
+    private static float SnapOffset(float value)
+    {
+        return MathF.Abs(value) < 0.02f ? 0f : value;
+    }
+
+    private bool ShouldSuppressRepositionConfirm()
+    {
+        return GetNowMs() - lastRepositionDragMs < 200;
+    }
+
+    private static double GetNowMs()
+    {
+        return Game1.currentGameTime?.TotalGameTime.TotalMilliseconds ?? 0;
+    }
+
+    private void PrepareRepositionLayout()
+    {
+        if (repositionMenuLayout is not null)
+        {
+            return;
+        }
+        var viewport = Game1.uiViewport;
+        if (Controller?.Menu is not null)
+        {
+            repositionMenuX = Controller.Menu.xPositionOnScreen;
+            repositionMenuY = Controller.Menu.yPositionOnScreen;
+            repositionControllerWidth = Controller.Menu.width;
+            repositionControllerHeight = Controller.Menu.height;
+            Controller.Menu.xPositionOnScreen = 0;
+            Controller.Menu.yPositionOnScreen = 0;
+            Controller.Menu.width = viewport.Width;
+            Controller.Menu.height = viewport.Height;
+            repositionControllerCaptured = true;
+        }
+        else
+        {
+            repositionControllerCaptured = false;
+        }
+        repositionMenuLayout = MenuLayout;
+        repositionMenuWidth = MenuWidth;
+        repositionMenuHeight = MenuHeight;
+        repositionContentPanelSize = ContentPanelSize;
+        MenuWidth = viewport.Width;
+        MenuHeight = viewport.Height;
+        MenuLayout = $"{viewport.Width}px {viewport.Height}px";
+        ContentPanelSize = new(viewport.Width, viewport.Height);
+    }
+
+    private void RestoreRepositionLayout()
+    {
+        if (repositionMenuLayout is null)
+        {
+            return;
+        }
+        if (Controller?.Menu is not null)
+        {
+            if (repositionControllerCaptured)
+            {
+                Controller.Menu.xPositionOnScreen = repositionMenuX;
+                Controller.Menu.yPositionOnScreen = repositionMenuY;
+                Controller.Menu.width = repositionControllerWidth;
+                Controller.Menu.height = repositionControllerHeight;
+            }
+        }
+        MenuWidth = repositionMenuWidth;
+        MenuHeight = repositionMenuHeight;
+        MenuLayout = repositionMenuLayout;
+        ContentPanelSize = repositionContentPanelSize;
+        repositionMenuLayout = null;
+        repositionControllerCaptured = false;
+        UpdateMenuPosition();
+    }
+
+    private void PrepareHudForReposition()
+    {
+        previousDisplayHud ??= Game1.displayHUD;
+        Game1.displayHUD = true;
+        if (Game1.onScreenMenus is null)
+        {
+            return;
+        }
+        var toolbars = Game1.onScreenMenus.OfType<Toolbar>().ToList();
+        if (hiddenToolbar is null)
+        {
+            hiddenToolbar = toolbars.FirstOrDefault();
+        }
+        foreach (var toolbar in toolbars)
+        {
+            Game1.onScreenMenus.Remove(toolbar);
+        }
+    }
+
+    private void RestoreHudAfterReposition()
+    {
+        if (previousDisplayHud is not null)
+        {
+            Game1.displayHUD = previousDisplayHud.Value;
+            previousDisplayHud = null;
+        }
+        if (hiddenToolbar is not null && Game1.onScreenMenus is not null)
+        {
+            if (!Game1.onScreenMenus.Contains(hiddenToolbar))
+            {
+                Game1.onScreenMenus.Add(hiddenToolbar);
+            }
+            hiddenToolbar = null;
         }
     }
 
@@ -497,6 +870,25 @@ internal partial class ConfigurationViewModel : IDisposable
     {
         if (Controller?.Menu is null)
         {
+            return;
+        }
+        if (IsRepositioning)
+        {
+            if (!repositionControllerCaptured)
+            {
+                var repositionViewport = Game1.uiViewport;
+                repositionMenuX = Controller.Menu.xPositionOnScreen;
+                repositionMenuY = Controller.Menu.yPositionOnScreen;
+                repositionControllerWidth = Controller.Menu.width;
+                repositionControllerHeight = Controller.Menu.height;
+                Controller.Menu.xPositionOnScreen = 0;
+                Controller.Menu.yPositionOnScreen = 0;
+                Controller.Menu.width = repositionViewport.Width;
+                Controller.Menu.height = repositionViewport.Height;
+                repositionControllerCaptured = true;
+            }
+            Controller.Menu.xPositionOnScreen = 0;
+            Controller.Menu.yPositionOnScreen = 0;
             return;
         }
         var viewport = Game1.uiViewport;

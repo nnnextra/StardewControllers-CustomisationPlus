@@ -41,7 +41,17 @@ public class ItemsConfiguration : IConfigEquatable<ItemsConfiguration>
     /// This is a list of lists, where each inner list is a single page of mod items, similar to a
     /// single inventory page and supporting the same type of gamepad-controlled pagination.
     /// </remarks>
-    public List<List<ModMenuItemConfiguration>> ModMenuPages { get; set; } = [];
+    public List<List<ModMenuItemConfiguration>> ModMenuPages { get; set; } =
+        [
+            new()
+            {
+                new() { Id = "focustense.StarControl.MainMenu", IsApiItem = true },
+                new() { Id = "focustense.StarControl.Map", IsApiItem = true },
+                new() { Id = "focustense.StarControl.Journal", IsApiItem = true },
+                new() { Id = "focustense.StarControl.Mail", IsApiItem = true },
+                new() { Id = "focustense.StarControl.Crafting", IsApiItem = true },
+            },
+        ];
 
     /// <summary>
     /// Whether to display the settings item on page <see cref="SettingsItemPageIndex"/> and at

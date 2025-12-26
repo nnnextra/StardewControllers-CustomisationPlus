@@ -59,7 +59,7 @@ public class RadialMenuPainter(GraphicsDevice graphicsDevice, Styles styles)
     {
         if (UseStyleOffsets)
         {
-            VerticalOffset = styles.MenuVerticalOffset;
+            VerticalOffset = -styles.MenuVerticalOffset;
             HorizontalOffset = styles.MenuHorizontalOffset;
         }
         var horizontalOffset = HorizontalOffset;

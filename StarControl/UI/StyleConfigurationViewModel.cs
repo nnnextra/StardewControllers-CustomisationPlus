@@ -8,7 +8,16 @@ internal partial class StyleConfigurationViewModel
     public EnumSegmentsViewModel<ButtonIconSet> ButtonIconSet { get; } = new();
     public Func<float, string> FormatPixels { get; } = v => v.ToString("f0") + " px";
     public Func<float, string> FormatScale { get; } = v => v.ToString("0.00") + "x";
-    public Func<float, string> FormatPercent { get; } = v => (v * 100).ToString("f0") + "%";
+    public Func<float, string> FormatPercent { get; } =
+        v =>
+        {
+            var percent = v * 100;
+            if (MathF.Abs(percent) < 0.5f)
+            {
+                percent = 0;
+            }
+            return percent.ToString("f0") + "%";
+        };
 
     /// <inheritdoc cref="Styles.InnerBackgroundColor" />
     [Notify]

@@ -1,10 +1,14 @@
-﻿<frame layout={:MenuLayout}
+﻿<panel layout={^MenuLayout}>
+<frame *if={^IsNotRepositioning}
+       layout={:MenuLayout}
        margin="0, 16, 0, 0"
-	   background={@Mods/StardewUI/Sprites/MenuBackground}
+       background={@Mods/StardewUI/Sprites/MenuBackground}
        border={@Mods/StardewUI/Sprites/MenuBorder}
        border-thickness="36, 36, 40, 36"
        padding="8"
        border-size={>ContentPanelSize}
+       pointer-events-enabled={^IsNotRepositioning}
+       visibility={^IsNotRepositioning}
        button-press=|HandleButtonPress($Button)|
        click=|CancelBlockingAction()|>
     <frame *float="above; 0, 36"
@@ -95,6 +99,96 @@
         </frame>
     </frame>
 </frame>
+<frame *if={^IsRepositioning}
+       layout="stretch stretch"
+       background={@Mods/StardewUI/Sprites/White}
+       background-tint="#0000"
+       pointer-events-enabled="true"
+       button-press=|HandleRepositionButton($Button)|>
+    <panel layout="stretch stretch">
+        <panel layout="stretch stretch" pointer-events-enabled="false">
+            <lane layout="stretch stretch" vertical-content-alignment="middle">
+                <frame layout="stretch 2px"
+                       background={@Mods/StardewUI/Sprites/White}
+                       background-tint="#ffffff80" />
+            </lane>
+            <lane layout="stretch stretch" horizontal-content-alignment="middle">
+                <frame layout="2px stretch"
+                       background={@Mods/StardewUI/Sprites/White}
+                       background-tint="#ffffff80" />
+            </lane>
+        </panel>
+        <lane layout="stretch stretch"
+              horizontal-content-alignment="middle"
+              vertical-content-alignment="middle">
+            <frame *context={:Preview}
+                   layout={^PreviewLayout}
+                   background={@Mods/StardewUI/Sprites/White}
+                   background-tint="#0000"
+                   transform={^RepositionPreviewTransform}>
+                <panel layout="stretch stretch">
+                    <image layout="stretch stretch" sprite={:Sprite} />
+                    <spacer layout="stretch stretch"
+                            pointer-style="Hand"
+                            draggable="true"/>
+                </panel>
+            </frame>
+        </lane>
+        <lane layout="stretch stretch"
+              horizontal-content-alignment="middle"
+              vertical-content-alignment="start"
+              pointer-events-enabled="false">
+            <label margin="0, 12, 0, 0"
+                   font="dialogue"
+                   color="#d93"
+                   shadow-alpha="0.6"
+                   shadow-color="#666"
+                   shadow-offset="-3, 3"
+                   text={#Config.Reposition.Heading} />
+        </lane>
+        <lane layout="stretch stretch"
+              horizontal-content-alignment="middle"
+              vertical-content-alignment="end">
+            <lane orientation="vertical"
+                  horizontal-content-alignment="middle"
+                  margin="0, 0, 0, 12">
+                <lane layout="content content"
+                      horizontal-content-alignment="middle">
+                    <button layout="content[150..] content"
+                            margin="8, 0, 8, 0"
+                            default-background={@Mods/StardewUI/Sprites/ButtonDark}
+                            default-background-tint="#9f9"
+                            hover-background={@Mods/StardewUI/Sprites/ButtonLight}
+                            shadow-visible="true"
+                            tooltip=""
+                            left-click=|ConfirmReposition()|>
+                        <label shadow-alpha="0.5"
+                               shadow-color="#447"
+                               shadow-offset="-1, 1"
+                               text={#Config.Action.Save.Title} />
+                    </button>
+                    <button layout="content[150..] content"
+                            margin="8, 0, 8, 0"
+                            default-background={@Mods/StardewUI/Sprites/ButtonDark}
+                            default-background-tint="#f99"
+                            hover-background={@Mods/StardewUI/Sprites/ButtonLight}
+                            shadow-visible="true"
+                            tooltip=""
+                            left-click=|CancelReposition()|>
+                        <label shadow-alpha="0.5"
+                               shadow-color="#447"
+                               shadow-offset="-1, 1"
+                               text={#Config.Action.Cancel.Title} />
+                    </button>
+                </lane>
+                <label margin="0, 8, 0, 0"
+                       color="#666"
+                       text={#Config.Reposition.Help} />
+            </lane>
+        </lane>
+    </panel>
+</frame>
+</panel>
 
 <template name="nav-tab">
     <lane *switch={:Id}

@@ -1,5 +1,10 @@
 <lane *context={:~ConfigurationViewModel.Style} layout="stretch content" orientation="vertical">
     <form-heading title={#Config.Layout.Heading} />
+    <form-row title={#Config.Reposition.Title}
+              description={#Config.Reposition.Description}>
+        <button text={#Config.Reposition.Button}
+                left-click=|~ConfigurationViewModel.BeginReposition()| />
+    </form-row>
     <form-row title={#Config.Layout.InnerRadius.Title} description={#Config.Layout.InnerRadius.Description}>
         <slider track-width="300"
                 min="50"
@@ -85,24 +90,6 @@
     <form-row title="Show Item Description"
               description="Shows the item description in the radial menu preview.">
         <checkbox is-checked={<>ShowSelectionDescription} />
-    </form-row>
-    <form-row title="Vertical position"
-              description="Moves the radial menu up or down on screen.">
-        <slider track-width="300"
-                min="-0.4"
-                max="0.5"
-                interval="0.02"
-                value={<>MenuVerticalOffset}
-                value-format={:FormatPercent} />
-    </form-row>
-    <form-row title="Horizontal position"
-              description="Moves the radial menu left or right on screen.">
-        <slider track-width="300"
-                min="-0.5"
-                max="0.5"
-                interval="0.02"
-                value={<>MenuHorizontalOffset}
-                value-format={:FormatPercent} />
     </form-row>
     <form-row title="Show Quick Actions"
               description="Shows the quick action menus while a radial menu is open.">
