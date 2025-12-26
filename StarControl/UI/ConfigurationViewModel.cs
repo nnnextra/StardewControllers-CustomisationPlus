@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
@@ -99,7 +100,7 @@ internal partial class ConfigurationViewModel : IDisposable
     private double lastRightStickScrollMs;
     private bool menuPositionInitialized;
     private bool? previousDisplayHud;
-    private Toolbar? hiddenToolbar;
+    private readonly List<Toolbar> hiddenToolbars = [];
 
     public int MenuWidth { get; private set; } = BaseMenuWidth;
     public int MenuHeight { get; private set; } = BaseMenuHeight;
@@ -628,9 +629,9 @@ internal partial class ConfigurationViewModel : IDisposable
             return;
         }
         var toolbars = Game1.onScreenMenus.OfType<Toolbar>().ToList();
-        if (hiddenToolbar is null)
+        if (hiddenToolbars.Count == 0)
         {
-            hiddenToolbar = toolbars.FirstOrDefault();
+            hiddenToolbars.AddRange(toolbars);
         }
         foreach (var toolbar in toolbars)
         {
@@ -645,13 +646,16 @@ internal partial class ConfigurationViewModel : IDisposable
             Game1.displayHUD = previousDisplayHud.Value;
             previousDisplayHud = null;
         }
-        if (hiddenToolbar is not null && Game1.onScreenMenus is not null)
+        if (hiddenToolbars.Count > 0 && Game1.onScreenMenus is not null)
         {
-            if (!Game1.onScreenMenus.Contains(hiddenToolbar))
+            foreach (var toolbar in hiddenToolbars)
             {
-                Game1.onScreenMenus.Add(hiddenToolbar);
+                if (!Game1.onScreenMenus.Contains(toolbar))
+                {
+                    Game1.onScreenMenus.Add(toolbar);
+                }
             }
-            hiddenToolbar = null;
+            hiddenToolbars.Clear();
         }
     }
 

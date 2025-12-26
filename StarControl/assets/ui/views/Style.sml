@@ -61,7 +61,7 @@
                 value={<>CursorDistance}
                 value-format={:FormatPixels} />
     </form-row>
-    <form-row title="Item Name Size"
+    <form-row title="Item name size"
               description="Scales the item name in the radial menu preview.">
         <slider track-width="300"
                 min="0.5"
@@ -70,7 +70,7 @@
                 value={<>SelectionTitleScale}
                 value-format={:FormatScale} />
     </form-row>
-    <form-row title="Description Size"
+    <form-row title="Description size"
               description="Scales the item description text in the radial menu preview.">
         <slider track-width="300"
                 min="0.5"
@@ -79,15 +79,15 @@
                 value={<>SelectionDescriptionScale}
                 value-format={:FormatScale} />
     </form-row>
-    <form-row title="Show Item Icon"
+    <form-row title="Show item icon"
               description="Shows the item icon in the radial menu preview.">
         <checkbox is-checked={<>ShowSelectionIcon} />
     </form-row>
-    <form-row title="Show Item Name"
+    <form-row title="Show item name"
               description="Shows the item name in the radial menu preview.">
         <checkbox is-checked={<>ShowSelectionTitle} />
     </form-row>
-    <form-row title="Show Item Description"
+    <form-row title="Show item description"
               description="Shows the item description in the radial menu preview.">
         <checkbox is-checked={<>ShowSelectionDescription} />
     </form-row>
@@ -95,7 +95,7 @@
               description="Shows the quick action menus while a radial menu is open.">
         <checkbox is-checked={<>ShowQuickActions} />
     </form-row>
-    <form-row title="Quick Actions Size"
+    <form-row title="Quick Actions size"
               description="Scales the quick action menus.">
         <slider track-width="300"
                 min="0.5"
