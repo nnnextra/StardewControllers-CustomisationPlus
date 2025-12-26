@@ -249,7 +249,7 @@
   "ModMenu.Journal.Description": "Open the quest log",
   "ModMenu.Mailbox.Name": "Mailbox",
   "ModMenu.Mailbox.Description": "Check your messages",
-  "ModMenu.MainMenuItem.Name": "Main Menu",
+  "ModMenu.MainMenuItem.Name": "Inventory",
   "ModMenu.MainMenuItem.Description": "Open the game's main menu",
   "ModMenu.Map.Name": "Map",
   "ModMenu.Map.Description": "Show a map of your current location",

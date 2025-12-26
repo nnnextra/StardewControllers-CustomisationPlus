@@ -182,8 +182,6 @@ internal class RadialMenuController(
                 );
                 InputPatches.AwaitRightStickMoveForCursor();
                 InputPatches.ForceHideCursor = true;
-                ResetMouseToPlayer();
-                InputPatches.NotifyMousePositionReset();
                 mouseNavigationActive = false;
                 mouseAngleAccumulator = 0f;
                 lastMousePosition = Game1.getMousePosition(ui_scale: true);
@@ -401,7 +399,6 @@ internal class RadialMenuController(
         RestoreHudState();
         if (usedRightStickInMenu)
         {
-            ResetMouseToPlayer();
             InputPatches.SuppressRightStickFor(InputPatches.RightStickSuppressionDuration);
         }
         if (Game1.player is not null)
@@ -409,7 +406,6 @@ internal class RadialMenuController(
             Game1.player.lastClick = Vector2.Zero;
         }
         InputPatches.AwaitRightStickMoveForCursor();
-        InputPatches.NotifyMousePositionReset();
         usedRightStickInMenu = false;
         if (fromActivation)
         {
@@ -812,34 +808,5 @@ internal class RadialMenuController(
         var centerY =
             viewport.Y + viewport.Height / 2.0f - viewport.Height * config.Style.MenuVerticalOffset;
         return new Vector2(centerX, centerY);
-    }
-
-    private static void ResetMouseToPlayer()
-    {
-        var player = Game1.player;
-        if (player is null)
-        {
-            return;
-        }
-        var facingOffset = player.FacingDirection switch
-        {
-            0 => new Vector2(0, -1), // Up
-            1 => new Vector2(1, 0), // Right
-            2 => new Vector2(0, 1), // Down
-            3 => new Vector2(-1, 0), // Left
-            _ => Vector2.Zero,
-        };
-        var standingPos = player.getStandingPosition();
-        var targetTile =
-            new Vector2(
-                (int)(standingPos.X / Game1.tileSize),
-                (int)(standingPos.Y / Game1.tileSize)
-            ) + facingOffset;
-        var targetPos =
-            targetTile * Game1.tileSize + new Vector2(Game1.tileSize / 2f, Game1.tileSize / 2f);
-        var viewport = Game1.viewport;
-        var cursorX = (int)(targetPos.X - viewport.X);
-        var cursorY = (int)(targetPos.Y - viewport.Y);
-        Game1.setMousePosition(cursorX, cursorY);
     }
 }

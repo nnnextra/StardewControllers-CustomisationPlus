@@ -97,15 +97,15 @@
         <form-heading title={#Config.QuickActions.Heading} />
         <label margin="16, 4, 0, 4" color="#666" text={#Config.QuickActions.Items.Help} />
         <lane *context={QuickSlots} layout="stretch content" margin="12, 4, 12, 4">
-            <quick-slot slot={DPadLeft} prompt={@Mods/focustense.StarControl/Sprites/UI:GamepadLeft} />
-            <quick-slot slot={DPadUp} prompt={@Mods/focustense.StarControl/Sprites/UI:GamepadUp} />
-            <quick-slot slot={DPadRight} prompt={@Mods/focustense.StarControl/Sprites/UI:GamepadRight} />
-            <quick-slot slot={DPadDown} prompt={@Mods/focustense.StarControl/Sprites/UI:GamepadDown} />
+            <quick-slot slot={DPadLeft} button="DPadLeft" />
+            <quick-slot slot={DPadUp} button="DPadUp" />
+            <quick-slot slot={DPadRight} button="DPadRight" />
+            <quick-slot slot={DPadDown} button="DPadDown" />
             <spacer layout="stretch 0px" />
-            <quick-slot slot={West} prompt={@Mods/focustense.StarControl/Sprites/UI:GamepadX} />
-            <quick-slot slot={North} prompt={@Mods/focustense.StarControl/Sprites/UI:GamepadY} />
-            <quick-slot slot={East} prompt={@Mods/focustense.StarControl/Sprites/UI:GamepadB} />
-            <quick-slot slot={South} prompt={@Mods/focustense.StarControl/Sprites/UI:GamepadA} />
+            <quick-slot slot={West} button="ControllerX" />
+            <quick-slot slot={North} button="ControllerY" />
+            <quick-slot slot={East} button="ControllerB" />
+            <quick-slot slot={South} button="ControllerA" />
         </lane>
     </lane>
 </lane>
@@ -125,6 +125,31 @@
     </lane>
 </template>
 
+<template name="button-prompt">
+    <panel *switch={&iconSet} layout="32px" margin="0, -8, 0, 0">
+        <panel *case="PlayStation" *switch={&button}>
+            <image *case="DPadLeft" layout="stretch" sprite={@Mods/focustense.StarControl/Sprites/UI.PlayStation:GamepadLeft} />
+            <image *case="DPadUp" layout="stretch" sprite={@Mods/focustense.StarControl/Sprites/UI.PlayStation:GamepadUp} />
+            <image *case="DPadRight" layout="stretch" sprite={@Mods/focustense.StarControl/Sprites/UI.PlayStation:GamepadRight} />
+            <image *case="DPadDown" layout="stretch" sprite={@Mods/focustense.StarControl/Sprites/UI.PlayStation:GamepadDown} />
+            <image *case="ControllerA" layout="stretch" sprite={@Mods/focustense.StarControl/Sprites/UI.PlayStation:GamepadA} />
+            <image *case="ControllerB" layout="stretch" sprite={@Mods/focustense.StarControl/Sprites/UI.PlayStation:GamepadB} />
+            <image *case="ControllerX" layout="stretch" sprite={@Mods/focustense.StarControl/Sprites/UI.PlayStation:GamepadX} />
+            <image *case="ControllerY" layout="stretch" sprite={@Mods/focustense.StarControl/Sprites/UI.PlayStation:GamepadY} />
+        </panel>
+        <panel *case="Xbox" *switch={&button}>
+            <image *case="DPadLeft" layout="stretch" sprite={@Mods/focustense.StarControl/Sprites/UI:GamepadLeft} />
+            <image *case="DPadUp" layout="stretch" sprite={@Mods/focustense.StarControl/Sprites/UI:GamepadUp} />
+            <image *case="DPadRight" layout="stretch" sprite={@Mods/focustense.StarControl/Sprites/UI:GamepadRight} />
+            <image *case="DPadDown" layout="stretch" sprite={@Mods/focustense.StarControl/Sprites/UI:GamepadDown} />
+            <image *case="ControllerA" layout="stretch" sprite={@Mods/focustense.StarControl/Sprites/UI:GamepadA} />
+            <image *case="ControllerB" layout="stretch" sprite={@Mods/focustense.StarControl/Sprites/UI:GamepadB} />
+            <image *case="ControllerX" layout="stretch" sprite={@Mods/focustense.StarControl/Sprites/UI:GamepadX} />
+            <image *case="ControllerY" layout="stretch" sprite={@Mods/focustense.StarControl/Sprites/UI:GamepadY} />
+        </panel>
+    </panel>
+</template>
+
 <template name="quick-slot">
     <lane *context={&slot}
           margin="4, 0"
@@ -135,7 +160,7 @@
         <item-slot tooltip={Tooltip}>
             <slotted-item icon={Icon} tint={Tint} />
         </item-slot>
-        <image layout="32px" margin="0, -8, 0, 0" sprite={&prompt} />
+        <button-prompt button={&button} iconSet={:^^ButtonIconSet} />
     </lane>
 </template>
 

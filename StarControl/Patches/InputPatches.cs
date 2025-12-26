@@ -143,14 +143,6 @@ internal static class InputPatches
         lastMousePosition = Game1.getMousePosition(ui_scale: true);
     }
 
-    public static void NotifyMousePositionReset()
-    {
-        var mouseState = Game1.input.GetMouseState();
-        lastMousePosition = new Point(mouseState.X, mouseState.Y);
-        lastMouseScrollValue = mouseState.ScrollWheelValue;
-        lastMouseHScrollValue = mouseState.HorizontalScrollWheelValue;
-    }
-
     public static void AllowMouseCursorReveal()
     {
         rightStickCursorAwaitingMove = false;
