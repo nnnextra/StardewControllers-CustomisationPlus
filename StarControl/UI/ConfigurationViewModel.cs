@@ -84,6 +84,8 @@ internal partial class ConfigurationViewModel : IDisposable
     private float repositionStartVertical;
     private float repositionOriginalHorizontal;
     private float repositionOriginalVertical;
+    private float repositionWorkingHorizontal;
+    private float repositionWorkingVertical;
     private Vector2 repositionDragStart;
     private bool repositionDragging;
     private double lastRepositionStickMs;
@@ -210,8 +212,10 @@ internal partial class ConfigurationViewModel : IDisposable
         PrepareRepositionLayout();
         repositionOriginalHorizontal = Style.MenuHorizontalOffset;
         repositionOriginalVertical = Style.MenuVerticalOffset;
-        repositionStartHorizontal = Style.MenuHorizontalOffset;
-        repositionStartVertical = Style.MenuVerticalOffset;
+        repositionWorkingHorizontal = Style.MenuHorizontalOffset;
+        repositionWorkingVertical = Style.MenuVerticalOffset;
+        repositionStartHorizontal = repositionWorkingHorizontal;
+        repositionStartVertical = repositionWorkingVertical;
         repositionDragging = false;
         IsNavigationEnabled = false;
         IsRepositioning = true;
@@ -225,6 +229,8 @@ internal partial class ConfigurationViewModel : IDisposable
         {
             return;
         }
+        Style.MenuHorizontalOffset = repositionWorkingHorizontal;
+        Style.MenuVerticalOffset = repositionWorkingVertical;
         EndReposition();
     }
 
@@ -234,6 +240,8 @@ internal partial class ConfigurationViewModel : IDisposable
         {
             return;
         }
+        repositionWorkingHorizontal = repositionOriginalHorizontal;
+        repositionWorkingVertical = repositionOriginalVertical;
         Style.MenuHorizontalOffset = repositionOriginalHorizontal;
         Style.MenuVerticalOffset = repositionOriginalVertical;
         EndReposition();
@@ -266,8 +274,8 @@ internal partial class ConfigurationViewModel : IDisposable
         }
         repositionDragging = true;
         repositionDragStart = position;
-        repositionStartHorizontal = Style.MenuHorizontalOffset;
-        repositionStartVertical = Style.MenuVerticalOffset;
+        repositionStartHorizontal = repositionWorkingHorizontal;
+        repositionStartVertical = repositionWorkingVertical;
     }
 
     public void RepositionDrag(Vector2 position)
@@ -280,8 +288,8 @@ internal partial class ConfigurationViewModel : IDisposable
         var delta = position - repositionDragStart;
         var nextHorizontal = repositionStartHorizontal + delta.X / viewport.Width;
         var nextVertical = repositionStartVertical - delta.Y / viewport.Height;
-        Style.MenuHorizontalOffset = SnapOffset(Math.Clamp(nextHorizontal, -0.5f, 0.5f));
-        Style.MenuVerticalOffset = SnapOffset(Math.Clamp(nextVertical, -0.5f, 0.5f));
+        repositionWorkingHorizontal = SnapOffset(Math.Clamp(nextHorizontal, -0.5f, 0.5f));
+        repositionWorkingVertical = SnapOffset(Math.Clamp(nextVertical, -0.5f, 0.5f));
         UpdateRepositionTransform();
     }
 
@@ -438,8 +446,8 @@ internal partial class ConfigurationViewModel : IDisposable
     private void UpdateRepositionTransform()
     {
         var viewport = Game1.uiViewport;
-        var offsetX = viewport.Width * Style.MenuHorizontalOffset;
-        var offsetY = -viewport.Height * Style.MenuVerticalOffset;
+        var offsetX = viewport.Width * repositionWorkingHorizontal;
+        var offsetY = -viewport.Height * repositionWorkingVertical;
         RepositionPreviewTransform =
             $"translateX: {offsetX.ToString("0.##", CultureInfo.InvariantCulture)}; "
             + $"translateY: {offsetY.ToString("0.##", CultureInfo.InvariantCulture)}";
@@ -476,14 +484,14 @@ internal partial class ConfigurationViewModel : IDisposable
         var deltaSeconds = (float)(elapsedMs / 1000.0);
         var scale = speed * intensity * deltaSeconds;
         var nextHorizontal =
-            Style.MenuHorizontalOffset + (stick.X / MathF.Max(0.001f, magnitude)) * scale;
+            repositionWorkingHorizontal + (stick.X / MathF.Max(0.001f, magnitude)) * scale;
         var nextVertical =
-            Style.MenuVerticalOffset + (stick.Y / MathF.Max(0.001f, magnitude)) * scale;
-        Style.MenuHorizontalOffset = ApplyRepositionSnap(
+            repositionWorkingVertical + (stick.Y / MathF.Max(0.001f, magnitude)) * scale;
+        repositionWorkingHorizontal = ApplyRepositionSnap(
             Math.Clamp(nextHorizontal, -0.5f, 0.5f),
             magnitude
         );
-        Style.MenuVerticalOffset = ApplyRepositionSnap(
+        repositionWorkingVertical = ApplyRepositionSnap(
             Math.Clamp(nextVertical, -0.5f, 0.5f),
             magnitude
         );
@@ -520,8 +528,8 @@ internal partial class ConfigurationViewModel : IDisposable
     private bool IsMouseOverRepositionPreview(Vector2 mousePosition)
     {
         var viewport = Game1.uiViewport;
-        var offsetX = viewport.Width * Style.MenuHorizontalOffset;
-        var offsetY = -viewport.Height * Style.MenuVerticalOffset;
+        var offsetX = viewport.Width * repositionWorkingHorizontal;
+        var offsetY = -viewport.Height * repositionWorkingVertical;
         var previewHalf = PreviewWidth / 2f;
         var center = new Vector2(viewport.Width / 2f + offsetX, viewport.Height / 2f + offsetY);
         return Math.Abs(mousePosition.X - center.X) <= previewHalf

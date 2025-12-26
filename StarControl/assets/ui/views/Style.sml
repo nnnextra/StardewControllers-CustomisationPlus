@@ -1,7 +1,6 @@
 <lane *context={:~ConfigurationViewModel.Style} layout="stretch content" orientation="vertical">
     <form-heading title={#Config.Layout.Heading} />
-    <form-row title={#Config.Reposition.Title}
-              description={#Config.Reposition.Description}>
+    <form-row title={#Config.Reposition.Title}>
         <button text={#Config.Reposition.Button}
                 left-click=|~ConfigurationViewModel.BeginReposition()| />
     </form-row>

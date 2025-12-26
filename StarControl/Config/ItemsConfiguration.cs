@@ -80,13 +80,13 @@ public class ItemsConfiguration : IConfigEquatable<ItemsConfiguration>
     /// The zero-based page number on which to show the Star Control Settings item, which brings up
     /// the configuration menu.
     /// </summary>
-    public int SettingsItemPageIndex { get; set; }
+    public int SettingsItemPageIndex { get; set; } = 0;
 
     /// <summary>
     /// The zero-based page number on which to show the Instant Actions item, which brings up the
     /// remapping (instant actions) menu.
     /// </summary>
-    public int InstantActionsItemPageIndex { get; set; }
+    public int InstantActionsItemPageIndex { get; set; } = 0;
 
     /// <summary>
     /// The zero-based position within the specific Mod Menu Page identified by
@@ -96,7 +96,7 @@ public class ItemsConfiguration : IConfigEquatable<ItemsConfiguration>
     /// The item will be inserted <em>before</em> the specified index, so an index of <c>0</c> means
     /// it will be the first item on that page.
     /// </remarks>
-    public int SettingsItemPositionIndex { get; set; }
+    public int SettingsItemPositionIndex { get; set; } = 0;
 
     /// <summary>
     /// The zero-based position within the specific Mod Menu Page identified by
@@ -106,7 +106,7 @@ public class ItemsConfiguration : IConfigEquatable<ItemsConfiguration>
     /// The item will be inserted <em>before</em> the specified index, so an index of <c>0</c> means
     /// it will be the first item on that page.
     /// </remarks>
-    public int InstantActionsItemPositionIndex { get; set; }
+    public int InstantActionsItemPositionIndex { get; set; } = 1;
 
     /// <summary>
     /// Map of all quick-slot buttons to the corresponding quick slot item (if any).
