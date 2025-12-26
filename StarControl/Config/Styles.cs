@@ -177,7 +177,7 @@ public class Styles : IConfigEquatable<Styles>
     /// <summary>
     /// Vertical offset for the radial menu relative to the viewport height.
     /// </summary>
-    public float MenuVerticalOffset { get; set; } = -0.3f;
+    public float MenuVerticalOffset { get; set; } = 0.3f;
 
     /// <summary>
     /// Whether vertical offset has been migrated to the inverted direction.
