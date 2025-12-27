@@ -956,6 +956,12 @@ internal partial class ConfigurationViewModel : IDisposable
     {
         Input.Save(config.Input);
         Style.Save(config.Style);
+        if (repositionCancelled)
+        {
+            config.Style.MenuHorizontalOffset = repositionOriginalHorizontal;
+            config.Style.MenuVerticalOffset = repositionOriginalVertical;
+            repositionCancelled = false;
+        }
         Items.Save(config.Items);
         Sound.Save(config.Sound);
         Mods.Save(config.Integrations);
