@@ -1,6 +1,21 @@
 <lane *context={:~ConfigurationViewModel.Mods} layout="stretch content" orientation="vertical" clip-size="stretch">
     <form-heading title={#Config.ModPriorities.Heading} />
-    <label margin="16, 0, 8, 16" color="#666" text={#Config.ModPriorities.Help} />
+    <lane margin="16, 0, 8, 16" layout="stretch content" orientation="vertical">
+        <label color="#666" text={#Config.ModPriorities.HelpPrefix} />
+        <label margin="0, 8, 0, 0" color="#666" text={#Config.ModPriorities.HelpReorderPrefix} />
+        <lane layout="stretch content" margin="0, 8, 0, 0" vertical-content-alignment="middle">
+            <label color="#666" text={#Config.ModPriorities.HelpReorderPress} />
+            <frame *switch={:ButtonIconSet} layout="content content" margin="-2, 4, -2, 0">
+                <image *case="PlayStation"
+                       layout="32px"
+                       sprite={@Mods/focustense.StarControl/Sprites/UI.PlayStation:GamepadX} />
+                <image *case="Xbox"
+                       layout="32px"
+                       sprite={@Mods/focustense.StarControl/Sprites/UI:GamepadX} />
+            </frame>
+            <label color="#666" text={#Config.ModPriorities.HelpSuffix} />
+        </lane>
+    </lane>
     <lane layout="stretch content"
           margin="16, 0"
           orientation="vertical"

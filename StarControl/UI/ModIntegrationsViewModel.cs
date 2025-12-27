@@ -18,8 +18,16 @@ internal partial class ModIntegrationsViewModel(
     [Notify]
     private ObservableCollection<ModPriorityViewModel> priorities = [];
 
+    [Notify]
+    private ButtonIconSet buttonIconSet = ButtonIconSet.Xbox;
+
     private ModPriorityViewModel? controllerReorderingItem;
     private int dragFrameCount;
+
+    public void SetButtonIconSet(ButtonIconSet value)
+    {
+        ButtonIconSet = value;
+    }
 
     public void BeginDrag(ModPriorityViewModel mod)
     {

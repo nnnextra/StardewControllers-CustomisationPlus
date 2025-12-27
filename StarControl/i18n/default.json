@@ -126,7 +126,9 @@
   "Config.ModMenu.Pages.Title": "Pages:",
   "Config.ModMenu.Pages.Description": "In-game, the displayed page can be changed by pressing the 'Next Page' and 'Previous Page' buttons specified in the Controls settings. You can assign any actions to any page.",
   "Config.ModMenu.AddPage.Description": "Add a new, blank page to the list of pages. If the page is still empty when settings are saved, it will be removed.",
-  "Config.ModMenu.Items.Help": "Click on a slot below to edit it, or click on the '+' slot to add a new item. To move or delete items, press X or right-click.",
+  "Config.ModMenu.Items.HelpPrefix": "Click on a slot below to edit it, or click on the '+' slot to add a new item.",
+  "Config.ModMenu.Items.HelpPress": "To move or delete items, press ",
+  "Config.ModMenu.Items.HelpSuffix": " or right-click.",
   "Config.ModMenu.AddItem.Description": "Add a new item to this page",
   "Config.ModMenu.MaxItems.Description": "This page is full. To add more items, select a different page or add a new page.",
   "Config.ModMenu.RemoveItem.Description": "Remove the selected item",
@@ -212,7 +214,10 @@
   // Config menu - Mod integrations page
   "Config.ModIntegrations.CustomItems": "Includes the {{PageCount}} page(s) of your personal Mod Menu, as configured in the Actions tab.",
   "Config.ModPriorities.Heading": "Mod Priorities",
-  "Config.ModPriorities.Help": "Click the checkbox or mod name to enable or disable its menus.\n\nTo change the page order, drag items with the mouse, or press the secondary (X) button on your controller.",
+  "Config.ModPriorities.HelpPrefix": "Click the checkbox or mod name to enable or disable its menus.",
+  "Config.ModPriorities.HelpReorderPrefix": "To change the page order, drag items with the mouse, or",
+  "Config.ModPriorities.HelpReorderPress": "press ",
+  "Config.ModPriorities.HelpSuffix": " on your controller.",
 
   // Config menu - Debug settings page
   "Config.Logging.Heading": "Logging",

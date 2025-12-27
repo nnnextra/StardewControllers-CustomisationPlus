@@ -139,6 +139,7 @@ internal partial class ConfigurationViewModel : IDisposable
             var iconSet = Style.ButtonIconSet.SelectedValue;
             Items.SetButtonIconSet(iconSet);
             Input.SetButtonIconSet(iconSet);
+            Mods.SetButtonIconSet(iconSet);
         };
         Preview = new(Style, 500, 500);
     }
@@ -381,7 +382,8 @@ internal partial class ConfigurationViewModel : IDisposable
         {
             return;
         }
-        Pager.Pages[loadingPageIndex].Loaded = true;
+        var page = Pager.Pages[loadingPageIndex];
+        page.Loaded = true;
         loadingPageIndex++;
     }
 
@@ -679,6 +681,7 @@ internal partial class ConfigurationViewModel : IDisposable
         var iconSet = Style.ButtonIconSet.SelectedValue;
         Items.SetButtonIconSet(iconSet);
         Input.SetButtonIconSet(iconSet);
+        Mods.SetButtonIconSet(iconSet);
         Items.Load(config.Items);
         Sound.Load(config.Sound);
         Mods.Load(config.Integrations);

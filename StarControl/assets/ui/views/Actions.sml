@@ -33,7 +33,21 @@
             <label color="#fff" text="+" shadow-offset="-2, 2" shadow-alpha="0.8" shadow-color="#333" />
         </button>
     </lane>
-    <label margin="16, 4, 0, 4" color="#666" text={#Config.ModMenu.Items.Help} />
+    <lane margin="16, 4, 0, 4" orientation="vertical">
+        <label color="#666" text={#Config.ModMenu.Items.HelpPrefix} />
+        <lane margin="0, 8, 0, 0" vertical-content-alignment="middle">
+            <label color="#666" text={#Config.ModMenu.Items.HelpPress} />
+            <frame *switch={:ButtonIconSet} layout="content content" margin="-2, 4, -2, 0">
+                <image *case="PlayStation"
+                       layout="32px"
+                       sprite={@Mods/focustense.StarControl/Sprites/UI.PlayStation:GamepadX} />
+                <image *case="Xbox"
+                       layout="32px"
+                       sprite={@Mods/focustense.StarControl/Sprites/UI:GamepadX} />
+            </frame>
+            <label color="#666" text={#Config.ModMenu.Items.HelpSuffix} />
+        </lane>
+    </lane>
     <panel *context={:Pager} margin="16, 4">
         <grid *repeat={Pages}
               layout="stretch content"
