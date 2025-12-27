@@ -1,5 +1,17 @@
 <lane *context={:~ConfigurationViewModel.Input} layout="stretch content" orientation="vertical">
     <form-heading title={#Config.Keybind.Heading} />
+    <lane margin="16, 2, 0, 0" vertical-content-alignment="middle">
+        <label color="#666" text={#Config.Keybind.ClearMapping.Press} />
+        <frame *switch={:ButtonIconSetValue} layout="content content" margin="-3, 6, -3, 0">
+            <image *case="PlayStation"
+                   layout="32px"
+                   sprite={@Mods/focustense.StarControl/Sprites/UI.PlayStation:GamepadX} />
+            <image *case="Xbox"
+                   layout="32px"
+                   sprite={@Mods/focustense.StarControl/Sprites/UI:GamepadX} />
+        </frame>
+        <label color="#666" text={#Config.Keybind.ClearMapping.Suffix} />
+    </lane>
     <form-row-container>
         <inline-keybind title={#Config.Keybind.Inventory.Title}
                         description={#Config.Keybind.Inventory.Description}

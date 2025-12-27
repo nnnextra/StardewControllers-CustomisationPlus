@@ -37,7 +37,7 @@
         <label color="#666" text={#Config.ModMenu.Items.HelpPrefix} />
         <lane margin="0, 8, 0, 0" vertical-content-alignment="middle">
             <label color="#666" text={#Config.ModMenu.Items.HelpPress} />
-            <frame *switch={:ButtonIconSet} layout="content content" margin="-2, 4, -2, 0">
+            <frame *switch={:ButtonIconSet} layout="content content" margin="-3, 6, -3, 0">
                 <image *case="PlayStation"
                        layout="32px"
                        sprite={@Mods/focustense.StarControl/Sprites/UI.PlayStation:GamepadX} />

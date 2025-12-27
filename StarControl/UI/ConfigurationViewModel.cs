@@ -190,11 +190,46 @@ internal partial class ConfigurationViewModel : IDisposable
                 break;
             case ConfigurationAction.Reset:
                 Game1.playSound("drumkit6");
-                Load(new ModConfig());
-                Style.MenuVerticalOffset = -MathF.Abs(Style.MenuVerticalOffset);
+                ResetCurrentPage();
                 break;
             default:
                 throw new ArgumentException($"Unsupported menu action: {action}");
+        }
+    }
+
+    private void ResetCurrentPage()
+    {
+        var defaults = new ModConfig();
+        switch (Pager.SelectedPage?.Id)
+        {
+            case NavPage.Controls:
+                Input.Load(defaults.Input);
+                Input.SetButtonIconSet(Style.ButtonIconSet.SelectedValue);
+                break;
+            case NavPage.Style:
+                Style.Load(defaults.Style);
+                var iconSet = Style.ButtonIconSet.SelectedValue;
+                Items.SetButtonIconSet(iconSet);
+                Input.SetButtonIconSet(iconSet);
+                Mods.SetButtonIconSet(iconSet);
+                Style.MenuVerticalOffset = -MathF.Abs(Style.MenuVerticalOffset);
+                break;
+            case NavPage.Actions:
+                Items.Load(defaults.Items);
+                break;
+            case NavPage.Sound:
+                Sound.Load(defaults.Sound);
+                break;
+            case NavPage.Mods:
+                Mods.Load(defaults.Integrations);
+                break;
+            case NavPage.Debug:
+                Debug.Load(defaults.Debug);
+                break;
+            default:
+                Load(defaults);
+                Style.MenuVerticalOffset = -MathF.Abs(Style.MenuVerticalOffset);
+                break;
         }
     }
 

@@ -16,10 +16,12 @@
   "Config.Action.Save.Title": "Save",
   "Config.Action.Save.Description": "Update the mod configuration and close this menu.",
   "Config.Action.Reset.Title": "Defaults",
-  "Config.Action.Reset.Description": "Reset all settings to their default values; the contents of your Mod Menu and Quick Slots will also be deleted. You can still cancel after resetting.",
+  "Config.Action.Reset.Description": "Reset the current page to its default values. On Actions, this clears Mod Menu and Quick Slots. You can still cancel after resetting.",
 
   // Config menu - Controls page
   "Config.Keybind.Heading": "Button Mapping",
+  "Config.Keybind.ClearMapping.Press": "Press ",
+  "Config.Keybind.ClearMapping.Suffix": " or right-click to clear mapping.",
   "Config.Keybind.Inventory.Title": "Item Wheel",
   "Config.Keybind.Inventory.Description": "Which button shows the item wheel for selecting/using items in your backpack.",
   "Config.Keybind.Mods.Title": "Mod Wheel",
