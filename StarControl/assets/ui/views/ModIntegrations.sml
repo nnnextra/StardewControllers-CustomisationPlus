@@ -1,8 +1,9 @@
 <lane *context={:~ConfigurationViewModel.Mods} layout="stretch content" orientation="vertical" clip-size="stretch">
     <form-heading title={#Config.ModPriorities.Heading} />
-    <lane margin="16, 0, 8, 16" vertical-content-alignment="middle">
+    <lane margin="16, 0, 8, 16"
+          vertical-content-alignment="middle">
         <label color="#666" text={#Config.ModPriorities.HelpPrefix} />
-        <button-prompt button="ControllerX" iconSet={:^^ButtonIconSet} />
+        <image layout="32px" margin="0, -8, 0, 0" sprite={:ControllerXPromptSprite} />
         <label color="#666" text={#Config.ModPriorities.HelpSuffix} />
     </lane>
     <lane layout="stretch content"

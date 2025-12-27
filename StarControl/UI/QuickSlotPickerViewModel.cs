@@ -149,39 +149,36 @@ internal partial class QuickSlotPickerViewModel
         searchCancellationTokenSource.Cancel();
         searchCancellationTokenSource = new();
         var cancellationToken = searchCancellationTokenSource.Token;
-        var searchTask = Task.Run(
-            () => allItems.Search(SearchText, cancellationToken),
-            cancellationToken
-        );
-        searchTask.ContinueWith(
-            t =>
+        IEnumerable<ParsedItemData> searchResults;
+        try
+        {
+            searchResults = allItems.Search(SearchText, cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            return;
+        }
+        catch (Exception ex)
+        {
+            Logger.Log($"Failed searching for items: {ex}", LogLevel.Error);
+            return;
+        }
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return;
+        }
+        lock (searchLock)
+        {
+            var results = new List<QuickSlotPickerItemViewModel>();
+            // Results can easily be limited using .Take(limit), but we also need to know if there are more,
+            // which no Linq extension can tell us.
+            using var resultEnumerator = searchResults.GetEnumerator();
+            while (results.Count < MAX_RESULTS && resultEnumerator.MoveNext())
             {
-                if (t.IsFaulted)
-                {
-                    Logger.Log($"Failed searching for items: {t.Exception}", LogLevel.Error);
-                    return;
-                }
-                if (t.IsCanceled)
-                {
-                    return;
-                }
-                lock (searchLock)
-                {
-                    var results = new List<QuickSlotPickerItemViewModel>();
-                    // Results can easily be limited using .Take(limit), but we also need to know if there are more,
-                    // which no Linq extension can tell us.
-                    using var resultEnumerator = t.Result.GetEnumerator();
-                    while (results.Count < MAX_RESULTS && resultEnumerator.MoveNext())
-                    {
-                        results.Add(
-                            QuickSlotPickerItemViewModel.ForItemData(resultEnumerator.Current)
-                        );
-                    }
-                    SearchResults = results;
-                    HasMoreSearchResults = resultEnumerator.MoveNext();
-                }
-            },
-            cancellationToken
-        );
+                results.Add(QuickSlotPickerItemViewModel.ForItemData(resultEnumerator.Current));
+            }
+            SearchResults = results;
+            HasMoreSearchResults = resultEnumerator.MoveNext();
+        }
     }
 }

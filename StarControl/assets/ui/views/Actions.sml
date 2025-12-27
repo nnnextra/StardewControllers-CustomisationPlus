@@ -33,9 +33,10 @@
             <label color="#fff" text="+" shadow-offset="-2, 2" shadow-alpha="0.8" shadow-color="#333" />
         </button>
     </lane>
-    <lane margin="16, 4, 0, 4" vertical-content-alignment="middle">
+    <lane margin="16, 4, 0, 4"
+          vertical-content-alignment="middle">
         <label color="#666" text={#Config.ModMenu.Items.HelpPrefix} />
-        <button-prompt button="ControllerX" iconSet={:^^ButtonIconSet} />
+        <image layout="32px" margin="0, -8, 0, 0" sprite={:ControllerXPromptSprite} />
         <label color="#666" text={#Config.ModMenu.Items.HelpSuffix} />
     </lane>
     <panel *context={:Pager} margin="16, 4">
@@ -164,7 +165,7 @@
         <item-slot tooltip={Tooltip}>
             <slotted-item icon={Icon} tint={Tint} />
         </item-slot>
-        <button-prompt button={&button} iconSet={:^^ButtonIconSet} />
+        <button-prompt button={&button} iconSet={^^ButtonIconSet} />
     </lane>
 </template>
 

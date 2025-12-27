@@ -1,0 +1,8 @@
+<Project>
+  <Target Name="EnforceStardewGamePath" BeforeTargets="Build">
+    <Error
+      Condition="'$(GamePath)' != '/Users/julienhinson/Library/Application Support/Steam/steamapps/common/Stardew Valley 1.6.15/Contents/MacOS'"
+      Text="GamePath must point to the Stardew Valley 1.6.15 folder. Update Directory.Build.props before building."
+    />
+  </Target>
+</Project>

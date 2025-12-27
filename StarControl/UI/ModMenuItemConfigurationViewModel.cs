@@ -398,46 +398,42 @@ internal partial class ModMenuItemConfigurationViewModel
         searchCancellationTokenSource.Cancel();
         searchCancellationTokenSource = new();
         var cancellationToken = searchCancellationTokenSource.Token;
-        var searchTask = Task.Run(
-            () => allItems.Search(SearchText, cancellationToken),
-            cancellationToken
-        );
-        searchTask.ContinueWith(
-            t =>
-            {
-                if (t.IsFaulted)
-                {
-                    Logger.Log($"Failed searching for items: {t.Exception}", LogLevel.Error);
-                    return;
-                }
-                if (t.IsCanceled)
-                {
-                    return;
-                }
-                lock (searchLock)
-                {
-                    var previousIconItemId = IconItemId; // Save for thread safety
-                    var foundItems = t.Result.ToArray();
-                    var selectedIndex = !string.IsNullOrEmpty(previousIconItemId)
-                        ? Math.Max(
-                            Array.FindIndex(
-                                foundItems,
-                                r => r.QualifiedItemId == previousIconItemId
-                            ),
-                            0
-                        )
-                        : 0;
-                    SearchResults = new(
-                        foundItems,
-                        visibleSize: 5,
-                        bufferSize: 2,
-                        centerMargin: 20,
-                        itemDistance: 80,
-                        initialSelectedIndex: selectedIndex
-                    );
-                }
-            },
-            cancellationToken
-        );
+        IEnumerable<ParsedItemData> searchResults;
+        try
+        {
+            searchResults = allItems.Search(SearchText, cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            return;
+        }
+        catch (Exception ex)
+        {
+            Logger.Log($"Failed searching for items: {ex}", LogLevel.Error);
+            return;
+        }
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return;
+        }
+        lock (searchLock)
+        {
+            var previousIconItemId = IconItemId; // Save for thread safety
+            var foundItems = searchResults.ToArray();
+            var selectedIndex = !string.IsNullOrEmpty(previousIconItemId)
+                ? Math.Max(
+                    Array.FindIndex(foundItems, r => r.QualifiedItemId == previousIconItemId),
+                    0
+                )
+                : 0;
+            SearchResults = new(
+                foundItems,
+                visibleSize: 5,
+                bufferSize: 2,
+                centerMargin: 20,
+                itemDistance: 80,
+                initialSelectedIndex: selectedIndex
+            );
+        }
     }
 }

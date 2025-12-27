@@ -1,3 +1,5 @@
+using StarControl.Config;
+
 namespace StarControl.Graphics;
 
 /// <summary>
@@ -21,6 +23,15 @@ public static class Sprites
     /// Sprite of a gamepad, used for the Instant Actions menu item.
     /// </summary>
     public static Sprite? Gamepad() => Sprite.TryLoad(UI_TEXTURE_PATH, new(0, 0, 16, 16));
+
+    /// <summary>
+    /// Sprite of the X button for the selected icon set.
+    /// </summary>
+    public static Sprite? GamepadX(ButtonIconSet iconSet) =>
+        Sprite.TryLoad(
+            iconSet == ButtonIconSet.PlayStation ? UI_PLAYSTATION_TEXTURE_PATH : UI_TEXTURE_PATH,
+            new(96, 16, 16, 16)
+        );
 
     /// <summary>
     /// Gets the default error item sprite used for missing items.

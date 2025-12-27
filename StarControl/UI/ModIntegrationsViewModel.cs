@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using PropertyChanged.SourceGenerator;
 using StarControl.Config;
+using StarControl.Graphics;
 
 namespace StarControl.UI;
 
@@ -17,6 +18,11 @@ internal partial class ModIntegrationsViewModel(
 
     [Notify]
     private ObservableCollection<ModPriorityViewModel> priorities = [];
+
+    [Notify]
+    private ButtonIconSet buttonIconSet = ButtonIconSet.Xbox;
+
+    public Sprite? ControllerXPromptSprite => Sprites.GamepadX(ButtonIconSet);
 
     private ModPriorityViewModel? controllerReorderingItem;
     private int dragFrameCount;
@@ -166,6 +172,12 @@ internal partial class ModIntegrationsViewModel(
             }
             config.Priorities.Add(new() { ModId = priority.Id, Enabled = priority.Enabled });
         }
+    }
+
+    public void SetButtonIconSet(ButtonIconSet value)
+    {
+        ButtonIconSet = value;
+        OnPropertyChanged(new(nameof(ControllerXPromptSprite)));
     }
 
     public bool MoveDown(ModPriorityViewModel mod, bool fromDrag = false)

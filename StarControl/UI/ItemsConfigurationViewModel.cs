@@ -26,20 +26,7 @@ internal partial class ItemsConfigurationViewModel
     public PagerViewModel<ModMenuPageConfigurationViewModel> Pager { get; } =
         new() { Pages = [new(0)] };
 
-    private readonly Task<ParsedItemData[]> allItemsTask = Task.Run(
-        () =>
-            ItemRegistry
-                .ItemTypes.SelectMany(t =>
-                    t.GetAllIds()
-                        .OrderBy(id =>
-                            int.TryParse(id, out var numericId) ? numericId : int.MaxValue
-                        )
-                        .ThenBy(id => id)
-                        .Select(id => t.Identifier + id)
-                )
-                .Select(ItemRegistry.GetDataOrErrorItem)
-                .ToArray()
-    );
+    private ParsedItemData[]? allItems;
 
     [Notify]
     private ModMenuItemConfigurationViewModel? grabbedItem;
@@ -55,6 +42,8 @@ internal partial class ItemsConfigurationViewModel
 
     [Notify]
     private ButtonIconSet buttonIconSet = ButtonIconSet.Xbox;
+
+    public Sprite? ControllerXPromptSprite => Sprites.GamepadX(ButtonIconSet);
 
     [Notify]
     private bool showInventoryBlanks;
@@ -103,10 +92,7 @@ internal partial class ItemsConfigurationViewModel
         {
             return false;
         }
-        var newItem = new ModMenuItemConfigurationViewModel(
-            IdGenerator.NewId(6),
-            allItemsTask.Result
-        )
+        var newItem = new ModMenuItemConfigurationViewModel(IdGenerator.NewId(6), GetAllItems())
         {
             // Clone the items so we don't get selection state leaking between pickers.
             ApiItems = ApiItems.Select(item => item.Clone()).ToList(),
@@ -159,7 +145,7 @@ internal partial class ItemsConfigurationViewModel
     {
         var context = new QuickSlotPickerViewModel(
             slot,
-            allItemsTask.Result,
+            GetAllItems(),
             Pager.Pages.Select(page => page.Clone()).ToList()
         );
         ViewEngine.OpenChildMenu("QuickSlotPicker", context);
@@ -205,80 +191,96 @@ internal partial class ItemsConfigurationViewModel
         ShowInventoryBlanks = config.ShowInventoryBlanks;
         Pager.Pages.Clear();
         QuickSlots.Clear();
-        allItemsTask.ContinueWith(t =>
+        var allItems = GetAllItems();
+        foreach (var pageConfig in config.ModMenuPages)
         {
-            var allItems = t.Result;
-            foreach (var pageConfig in config.ModMenuPages)
+            var pageViewModel = new ModMenuPageConfigurationViewModel(Pager.Pages.Count);
+            foreach (var itemConfig in pageConfig)
             {
-                var pageViewModel = new ModMenuPageConfigurationViewModel(Pager.Pages.Count);
-                foreach (var itemConfig in pageConfig)
+                var itemViewModel = new ModMenuItemConfigurationViewModel(
+                    !string.IsNullOrWhiteSpace(itemConfig.Id)
+                        ? itemConfig.Id
+                        : IdGenerator.NewId(6),
+                    allItems
+                )
                 {
-                    var itemViewModel = new ModMenuItemConfigurationViewModel(
-                        !string.IsNullOrWhiteSpace(itemConfig.Id)
-                            ? itemConfig.Id
-                            : IdGenerator.NewId(6),
-                        allItems
-                    )
-                    {
-                        ApiItems = ApiItems.Select(item => item.Clone()).ToList(),
-                        ButtonIconSet = ButtonIconSet,
-                    };
-                    itemViewModel.Load(itemConfig);
-                    pageViewModel.Items.Add(itemViewModel);
-                }
-                Pager.Pages.Add(pageViewModel);
+                    ApiItems = ApiItems.Select(item => item.Clone()).ToList(),
+                    ButtonIconSet = ButtonIconSet,
+                };
+                itemViewModel.Load(itemConfig);
+                pageViewModel.Items.Add(itemViewModel);
             }
-            if (Pager.Pages.Count == 0)
+            Pager.Pages.Add(pageViewModel);
+        }
+        if (Pager.Pages.Count == 0)
+        {
+            Pager.Pages.Add(new(0));
+        }
+        settingsItem.Enabled = config.ShowSettingsItem;
+        settingsItem.ButtonIconSet = ButtonIconSet;
+        instantActionsItem.Enabled = config.ShowInstantActionsItem;
+        instantActionsItem.ButtonIconSet = ButtonIconSet;
+
+        InsertBuiltInItems();
+
+        QuickSlots.Load(config.QuickSlots, Pager.Pages);
+
+        void InsertBuiltInItems()
+        {
+            var inserts =
+                new List<(
+                    int PageIndex,
+                    int PositionIndex,
+                    ModMenuItemConfigurationViewModel Item
+                )>();
+            inserts.Add(
+                (
+                    Math.Clamp(config.SettingsItemPageIndex, 0, Pager.Pages.Count - 1),
+                    config.SettingsItemPositionIndex,
+                    settingsItem
+                )
+            );
+            inserts.Add(
+                (
+                    Math.Clamp(config.InstantActionsItemPageIndex, 0, Pager.Pages.Count - 1),
+                    config.InstantActionsItemPositionIndex,
+                    instantActionsItem
+                )
+            );
+            foreach (var group in inserts.GroupBy(entry => entry.PageIndex))
             {
-                Pager.Pages.Add(new(0));
-            }
-            settingsItem.Enabled = config.ShowSettingsItem;
-            settingsItem.ButtonIconSet = ButtonIconSet;
-            instantActionsItem.Enabled = config.ShowInstantActionsItem;
-            instantActionsItem.ButtonIconSet = ButtonIconSet;
-
-            InsertBuiltInItems();
-
-            QuickSlots.Load(config.QuickSlots, Pager.Pages);
-
-            void InsertBuiltInItems()
-            {
-                var inserts =
-                    new List<(
-                        int PageIndex,
-                        int PositionIndex,
-                        ModMenuItemConfigurationViewModel Item
-                    )>();
-                inserts.Add(
-                    (
-                        Math.Clamp(config.SettingsItemPageIndex, 0, Pager.Pages.Count - 1),
-                        config.SettingsItemPositionIndex,
-                        settingsItem
-                    )
-                );
-                inserts.Add(
-                    (
-                        Math.Clamp(config.InstantActionsItemPageIndex, 0, Pager.Pages.Count - 1),
-                        config.InstantActionsItemPositionIndex,
-                        instantActionsItem
-                    )
-                );
-                foreach (var group in inserts.GroupBy(entry => entry.PageIndex))
+                var page = Pager.Pages[group.Key];
+                foreach (var entry in group.OrderBy(e => e.PositionIndex))
                 {
-                    var page = Pager.Pages[group.Key];
-                    foreach (var entry in group.OrderBy(e => e.PositionIndex))
-                    {
-                        var itemIndex = Math.Clamp(entry.PositionIndex, 0, page.Items.Count);
-                        page.Items.Insert(itemIndex, entry.Item);
-                    }
+                    var itemIndex = Math.Clamp(entry.PositionIndex, 0, page.Items.Count);
+                    page.Items.Insert(itemIndex, entry.Item);
                 }
             }
-        });
+        }
+    }
+
+    private ParsedItemData[] GetAllItems()
+    {
+        if (allItems is not null)
+        {
+            return allItems;
+        }
+        allItems = ItemRegistry
+            .ItemTypes.SelectMany(t =>
+                t.GetAllIds()
+                    .OrderBy(id => int.TryParse(id, out var numericId) ? numericId : int.MaxValue)
+                    .ThenBy(id => id)
+                    .Select(id => t.Identifier + id)
+            )
+            .Select(ItemRegistry.GetDataOrErrorItem)
+            .ToArray();
+        return allItems;
     }
 
     public void SetButtonIconSet(ButtonIconSet value)
     {
         ButtonIconSet = value;
+        OnPropertyChanged(new(nameof(ControllerXPromptSprite)));
         settingsItem.ButtonIconSet = value;
         instantActionsItem.ButtonIconSet = value;
         foreach (var page in Pager.Pages)

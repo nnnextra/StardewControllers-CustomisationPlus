@@ -1,0 +1,6 @@
+<Project>
+  <PropertyGroup>
+    <GamePath>/Users/julienhinson/Library/Application Support/Steam/steamapps/common/Stardew Valley 1.6.15/Contents/MacOS</GamePath>
+    <GameModsPath>$(GamePath)/Mods</GameModsPath>
+  </PropertyGroup>
+</Project>
