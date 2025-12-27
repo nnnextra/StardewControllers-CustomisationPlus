@@ -196,6 +196,7 @@ internal partial class ConfigurationViewModel : IDisposable
             case ConfigurationAction.Reset:
                 Game1.playSound("drumkit6");
                 Load(new ModConfig());
+                Style.MenuVerticalOffset = -MathF.Abs(Style.MenuVerticalOffset);
                 break;
             default:
                 throw new ArgumentException($"Unsupported menu action: {action}");
