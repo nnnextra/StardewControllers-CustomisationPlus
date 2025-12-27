@@ -170,7 +170,7 @@ internal partial class ConfigurationViewModel : IDisposable
     public bool HasUnsavedChanges()
     {
         var dummyConfig = new ModConfig();
-        SaveSections(dummyConfig);
+        SaveSections(dummyConfig, clearRepositionCancel: false);
         return !dummyConfig.Equals(config);
     }
 
@@ -179,12 +179,6 @@ internal partial class ConfigurationViewModel : IDisposable
         switch (action)
         {
             case ConfigurationAction.Save:
-                if (repositionCancelled)
-                {
-                    Style.MenuHorizontalOffset = repositionOriginalHorizontal;
-                    Style.MenuVerticalOffset = repositionOriginalVertical;
-                    repositionCancelled = false;
-                }
                 Save();
                 Dismissed = true;
                 Controller?.Close();
@@ -344,7 +338,7 @@ internal partial class ConfigurationViewModel : IDisposable
 
     public void Save()
     {
-        SaveSections(config);
+        SaveSections(config, clearRepositionCancel: true);
         helper.WriteConfig(config);
         Saved?.Invoke(this, EventArgs.Empty);
     }
@@ -952,7 +946,7 @@ internal partial class ConfigurationViewModel : IDisposable
         );
     }
 
-    private void SaveSections(ModConfig config)
+    private void SaveSections(ModConfig config, bool clearRepositionCancel)
     {
         Input.Save(config.Input);
         Style.Save(config.Style);
@@ -960,7 +954,10 @@ internal partial class ConfigurationViewModel : IDisposable
         {
             config.Style.MenuHorizontalOffset = repositionOriginalHorizontal;
             config.Style.MenuVerticalOffset = repositionOriginalVertical;
-            repositionCancelled = false;
+            if (clearRepositionCancel)
+            {
+                repositionCancelled = false;
+            }
         }
         Items.Save(config.Items);
         Sound.Save(config.Sound);
