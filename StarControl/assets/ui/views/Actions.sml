@@ -33,7 +33,11 @@
             <label color="#fff" text="+" shadow-offset="-2, 2" shadow-alpha="0.8" shadow-color="#333" />
         </button>
     </lane>
-    <label margin="16, 4, 0, 4" color="#666" text={#Config.ModMenu.Items.Help} />
+    <lane margin="16, 4, 0, 4" vertical-content-alignment="middle">
+        <label color="#666" text={#Config.ModMenu.Items.HelpPrefix} />
+        <button-prompt button="ControllerX" iconSet={:^^ButtonIconSet} />
+        <label color="#666" text={#Config.ModMenu.Items.HelpSuffix} />
+    </lane>
     <panel *context={:Pager} margin="16, 4">
         <grid *repeat={Pages}
               layout="stretch content"

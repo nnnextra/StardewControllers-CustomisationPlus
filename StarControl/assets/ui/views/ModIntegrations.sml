@@ -1,6 +1,10 @@
 <lane *context={:~ConfigurationViewModel.Mods} layout="stretch content" orientation="vertical" clip-size="stretch">
     <form-heading title={#Config.ModPriorities.Heading} />
-    <label margin="16, 0, 8, 16" color="#666" text={#Config.ModPriorities.Help} />
+    <lane margin="16, 0, 8, 16" vertical-content-alignment="middle">
+        <label color="#666" text={#Config.ModPriorities.HelpPrefix} />
+        <button-prompt button="ControllerX" iconSet={:^^ButtonIconSet} />
+        <label color="#666" text={#Config.ModPriorities.HelpSuffix} />
+    </lane>
     <lane layout="stretch content"
           margin="16, 0"
           orientation="vertical"
@@ -39,4 +43,29 @@
 
 <template name="form-heading">
     <banner margin="0, 8, 0, 8" text={&title} />
+</template>
+
+<template name="button-prompt">
+    <panel *switch={&iconSet} layout="32px" margin="0, -8, 0, 0">
+        <panel *case="PlayStation" *switch={&button}>
+            <image *case="DPadLeft" layout="stretch" sprite={@Mods/focustense.StarControl/Sprites/UI.PlayStation:GamepadLeft} />
+            <image *case="DPadUp" layout="stretch" sprite={@Mods/focustense.StarControl/Sprites/UI.PlayStation:GamepadUp} />
+            <image *case="DPadRight" layout="stretch" sprite={@Mods/focustense.StarControl/Sprites/UI.PlayStation:GamepadRight} />
+            <image *case="DPadDown" layout="stretch" sprite={@Mods/focustense.StarControl/Sprites/UI.PlayStation:GamepadDown} />
+            <image *case="ControllerA" layout="stretch" sprite={@Mods/focustense.StarControl/Sprites/UI.PlayStation:GamepadA} />
+            <image *case="ControllerB" layout="stretch" sprite={@Mods/focustense.StarControl/Sprites/UI.PlayStation:GamepadB} />
+            <image *case="ControllerX" layout="stretch" sprite={@Mods/focustense.StarControl/Sprites/UI.PlayStation:GamepadX} />
+            <image *case="ControllerY" layout="stretch" sprite={@Mods/focustense.StarControl/Sprites/UI.PlayStation:GamepadY} />
+        </panel>
+        <panel *case="Xbox" *switch={&button}>
+            <image *case="DPadLeft" layout="stretch" sprite={@Mods/focustense.StarControl/Sprites/UI:GamepadLeft} />
+            <image *case="DPadUp" layout="stretch" sprite={@Mods/focustense.StarControl/Sprites/UI:GamepadUp} />
+            <image *case="DPadRight" layout="stretch" sprite={@Mods/focustense.StarControl/Sprites/UI:GamepadRight} />
+            <image *case="DPadDown" layout="stretch" sprite={@Mods/focustense.StarControl/Sprites/UI:GamepadDown} />
+            <image *case="ControllerA" layout="stretch" sprite={@Mods/focustense.StarControl/Sprites/UI:GamepadA} />
+            <image *case="ControllerB" layout="stretch" sprite={@Mods/focustense.StarControl/Sprites/UI:GamepadB} />
+            <image *case="ControllerX" layout="stretch" sprite={@Mods/focustense.StarControl/Sprites/UI:GamepadX} />
+            <image *case="ControllerY" layout="stretch" sprite={@Mods/focustense.StarControl/Sprites/UI:GamepadY} />
+        </panel>
+    </panel>
 </template>

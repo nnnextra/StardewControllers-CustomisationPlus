@@ -2,7 +2,7 @@
   <PropertyGroup>
     <AssemblyName>StarControl</AssemblyName>
     <RootNamespace>StarControl</RootNamespace>
-    <Version>1.1.10-prerelease.11</Version>
+    <Version>1.1.10-prerelease.12</Version>
     <AssemblyVersion>1.1.10.0</AssemblyVersion>
     <FileVersion>1.1.10.0</FileVersion>
     <ModFolderName>Star Control - CustomisationPlus</ModFolderName>

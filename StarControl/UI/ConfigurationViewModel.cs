@@ -171,6 +171,7 @@ internal partial class ConfigurationViewModel : IDisposable
     {
         var dummyConfig = new ModConfig();
         SaveSections(dummyConfig, clearRepositionCancel: false);
+        dummyConfig.Style.MenuVerticalOffsetInverted = config.Style.MenuVerticalOffsetInverted;
         return !dummyConfig.Equals(config);
     }
 
