@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.10-prerelease.13] - 2025-12-27
+
+### Changed
+
+- Defaults now reset only the current config page (Actions still clears Mod Menu + Quick Slots).
+- Controls tab now shows a controller prompt for clearing mappings.
+- Actions/Mods help prompt icon alignment refined.
+
+## [1.1.10-prerelease.12] - 2025-12-27
+
+### Changed
+
+- Added controller button prompts to the Actions and Mods help text (with icon set support).
+- Reflowed Mods help text to avoid freezes from inline prompt rendering.
+
 ## [1.1.10-prerelease.11] - 2025-12-25
 
 ### Fixed
