@@ -47,7 +47,14 @@ public class ModEntry : Mod
         Logger.Monitor = Monitor;
         config = Helper.ReadConfig<ModConfig>();
         config.Input.ApplyLegacyThumbStickPreference();
-        if (!config.Style.MenuVerticalOffsetInverted)
+        var existingConfig = Helper.Data.ReadJsonFile<ModConfig>("config.json");
+        if (existingConfig is null)
+        {
+            config.Style.MenuVerticalOffset = -MathF.Abs(config.Style.MenuVerticalOffset);
+            config.Style.MenuVerticalOffsetInverted = true;
+            Helper.WriteConfig(config);
+        }
+        else if (!config.Style.MenuVerticalOffsetInverted)
         {
             config.Style.MenuVerticalOffset = -config.Style.MenuVerticalOffset;
             config.Style.MenuVerticalOffsetInverted = true;

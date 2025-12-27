@@ -88,6 +88,7 @@ internal partial class ConfigurationViewModel : IDisposable
     private float repositionWorkingVertical;
     private Vector2 repositionDragStart;
     private bool repositionDragging;
+    private bool repositionCancelled;
     private double lastRepositionStickMs;
     private string? repositionMenuLayout;
     private int repositionMenuWidth;
@@ -178,6 +179,12 @@ internal partial class ConfigurationViewModel : IDisposable
         switch (action)
         {
             case ConfigurationAction.Save:
+                if (repositionCancelled)
+                {
+                    Style.MenuHorizontalOffset = repositionOriginalHorizontal;
+                    Style.MenuVerticalOffset = repositionOriginalVertical;
+                    repositionCancelled = false;
+                }
                 Save();
                 Dismissed = true;
                 Controller?.Close();
@@ -217,6 +224,7 @@ internal partial class ConfigurationViewModel : IDisposable
         repositionStartHorizontal = repositionWorkingHorizontal;
         repositionStartVertical = repositionWorkingVertical;
         repositionDragging = false;
+        repositionCancelled = false;
         IsNavigationEnabled = false;
         IsRepositioning = true;
         PrepareHudForReposition();
@@ -231,6 +239,7 @@ internal partial class ConfigurationViewModel : IDisposable
         }
         Style.MenuHorizontalOffset = repositionWorkingHorizontal;
         Style.MenuVerticalOffset = repositionWorkingVertical;
+        repositionCancelled = false;
         EndReposition();
     }
 
@@ -244,6 +253,7 @@ internal partial class ConfigurationViewModel : IDisposable
         repositionWorkingVertical = repositionOriginalVertical;
         Style.MenuHorizontalOffset = repositionOriginalHorizontal;
         Style.MenuVerticalOffset = repositionOriginalVertical;
+        repositionCancelled = true;
         EndReposition();
     }
 
