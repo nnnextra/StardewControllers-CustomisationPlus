@@ -23,7 +23,7 @@ public record Sprite(Texture2D Texture, Rectangle SourceRect)
         var data = ItemRegistry.GetDataOrErrorItem(id);
         return new(data.GetTexture(), data.GetSourceRect());
     }
-    
+
     public static Sprite FromItem(Item item)
     {
         ArgumentNullException.ThrowIfNull(item);
@@ -95,7 +95,7 @@ public record Sprite(Texture2D Texture, Rectangle SourceRect)
             return null;
         }
     }
-    
+
     /// <summary>
     /// Attempts to load a sprite from configuration data.
     /// </summary>
