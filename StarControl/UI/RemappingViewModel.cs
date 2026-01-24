@@ -130,10 +130,18 @@ internal partial class RemappingViewModel(
             var item = slotData.IdType switch
             {
                 ItemIdType.GameItem => ItemGroups[0]
-                    .Items.FirstOrDefault(item => item.Id == slotData.Id)
-                    ?? RemappableItemViewModel.FromInventoryItem(
-                        ItemRegistry.Create(slotData.Id),
-                        who.Items
+                    .Items.FirstOrDefault(item =>
+                        item.Id == slotData.Id && item.SubId == slotData.SubId
+                    )
+                    ?? (
+                        QuickSlotResolver.ResolveInventoryItem(
+                            slotData.Id,
+                            slotData.SubId,
+                            who.Items
+                        )
+                            is Item invItem
+                            ? RemappableItemViewModel.FromInventoryItem(invItem, who.Items)
+                            : null
                     ),
                 ItemIdType.ModItem => ItemGroups[1]
                     .Items.FirstOrDefault(item => item.Id == slotData.Id),
@@ -153,7 +161,12 @@ internal partial class RemappingViewModel(
         {
             if (slot.Item is { } item && !string.IsNullOrEmpty(item.Id))
             {
-                data[button] = new() { Id = slot.Item.Id, IdType = slot.Item.IdType };
+                data[button] = new()
+                {
+                    Id = slot.Item.Id,
+                    SubId = slot.Item.SubId,
+                    IdType = slot.Item.IdType,
+                };
             }
         }
         onSave(data);
@@ -396,6 +409,8 @@ internal partial class RemappableItemViewModel
 {
     public string Id { get; init; } = "";
 
+    public string? SubId { get; init; }
+
     public ItemIdType IdType { get; init; }
     public bool IsCountVisible => Count > 1;
 
@@ -431,6 +446,7 @@ internal partial class RemappableItemViewModel
         {
             Id = qualifiedId ?? item.Name ?? item.GetType().FullName ?? "unknown",
             IdType = ItemIdType.GameItem,
+            SubId = Compat.ItemBagsIdentity.TryGetBagTypeId(item),
             Enabled = true,
             Sprite = sprite,
             Quality = item.Quality,
@@ -446,7 +462,11 @@ internal partial class RemappableItemViewModel
     {
         var result = FromInventoryItem(item);
         result.Enabled =
-            QuickSlotResolver.ResolveInventoryItem(item.QualifiedItemId, availableItems)
+            QuickSlotResolver.ResolveInventoryItem(
+                item.QualifiedItemId,
+                result.SubId,
+                availableItems
+            )
                 is not null;
         return result;
     }

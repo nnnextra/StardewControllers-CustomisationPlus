@@ -76,7 +76,11 @@ internal class QuickSlotPickerItemViewModel(
         {
             var fishData = ItemRegistry.GetDataOrErrorItem(obj.GetPreservedItemId());
             return new(
-                slot => slot.ItemData = data,
+                slot =>
+                {
+                    slot.ItemData = data;
+                    slot.ItemSubId = Compat.ItemBagsIdentity.TryGetBagTypeId(item);
+                },
                 fishData.GetTexture(),
                 fishData.GetSourceRect(),
                 fishData.GetSourceRect(),
@@ -94,7 +98,11 @@ internal class QuickSlotPickerItemViewModel(
         {
             var sprite = Sprite.FromItem(item);
             return new(
-                slot => slot.ItemData = data.GetBaseItem(),
+                slot =>
+                {
+                    slot.ItemData = data.GetBaseItem();
+                    slot.ItemSubId = Compat.ItemBagsIdentity.TryGetBagTypeId(item);
+                },
                 sprite.Texture,
                 sprite.SourceRect,
                 tooltip: tooltip
@@ -114,7 +122,11 @@ internal class QuickSlotPickerItemViewModel(
         }
 
         return new(
-            slot => slot.ItemData = data.GetBaseItem(),
+            slot =>
+            {
+                slot.ItemData = data.GetBaseItem();
+                slot.ItemSubId = Compat.ItemBagsIdentity.TryGetBagTypeId(item);
+            },
             data.GetTexture(),
             data.GetSourceRect(),
             tintRect,

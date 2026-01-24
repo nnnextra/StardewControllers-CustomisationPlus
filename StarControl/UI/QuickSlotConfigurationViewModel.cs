@@ -35,6 +35,9 @@ internal partial class QuickSlotConfigurationViewModel
     private ParsedItemData? itemData;
 
     [Notify]
+    private string? itemSubId;
+
+    [Notify]
     private ModMenuItemConfigurationViewModel? modAction;
 
     [Notify]
@@ -48,6 +51,7 @@ internal partial class QuickSlotConfigurationViewModel
         ItemData = null;
         ModAction = null;
         UseSecondaryAction = false;
+        ItemSubId = null;
     }
 
     private Sprite? GetIcon()
@@ -59,7 +63,11 @@ internal partial class QuickSlotConfigurationViewModel
             if (ItemData.IsErrorItem)
             {
                 var invItem = Game1.player?.Items?.FirstOrDefault(i =>
-                    i is not null && i.QualifiedItemId == ItemData.QualifiedItemId
+                    i is not null
+                    && i.QualifiedItemId == ItemData.QualifiedItemId
+                    && (
+                        ItemSubId is null || Compat.ItemBagsIdentity.TryGetBagTypeId(i) == ItemSubId
+                    )
                 );
 
                 if (invItem is not null)
@@ -83,7 +91,11 @@ internal partial class QuickSlotConfigurationViewModel
             if (ItemData.IsErrorItem)
             {
                 var invItem = Game1.player?.Items?.FirstOrDefault(i =>
-                    i is not null && i.QualifiedItemId == ItemData.QualifiedItemId
+                    i is not null
+                    && i.QualifiedItemId == ItemData.QualifiedItemId
+                    && (
+                        ItemSubId is null || Compat.ItemBagsIdentity.TryGetBagTypeId(i) == ItemSubId
+                    )
                 );
 
                 if (invItem is not null)
