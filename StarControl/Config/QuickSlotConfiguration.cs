@@ -17,6 +17,8 @@ public class QuickSlotConfiguration : IConfigEquatable<QuickSlotConfiguration>, 
     /// </summary>
     public string Id { get; set; } = "";
 
+    public string? SubId { get; set; }
+
     /// <summary>
     /// Whether to display a confirmation dialog before activating the item in this slot.
     /// </summary>
@@ -42,6 +44,7 @@ public class QuickSlotConfiguration : IConfigEquatable<QuickSlotConfiguration>, 
         }
         return IdType == other.IdType
             && Id == other.Id
+            && SubId == other.SubId
             && RequireConfirmation == other.RequireConfirmation
             && UseSecondaryAction == other.UseSecondaryAction;
     }
