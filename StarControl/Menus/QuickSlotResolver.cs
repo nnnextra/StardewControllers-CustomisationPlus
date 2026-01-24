@@ -12,7 +12,7 @@ internal class QuickSlotResolver(Farmer player, ModMenu modMenu)
         var exact = items.FirstOrDefault(i => i is not null && i.QualifiedItemId == id);
         if (exact is not null)
             return exact;
-        
+
         Logger.Log(LogCategory.QuickSlots, $"Searching for inventory item equivalent to '{id}'...");
         if (ItemRegistry.GetData(id) is not { } data)
         {

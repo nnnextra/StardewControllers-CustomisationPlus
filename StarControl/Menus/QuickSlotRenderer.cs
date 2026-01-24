@@ -453,7 +453,6 @@ internal class QuickSlotRenderer(GraphicsDevice graphicsDevice, ModConfig config
         };
     }
 
-
     private static Color LumaGray(Color color, float lightness)
     {
         var v = (int)((color.R * 0.2126f + color.G * 0.7152f + color.B * 0.0722f) * lightness);
