@@ -1,7 +1,9 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StarControl.Config;
+using StarControl.Data;
 using StarControl.Graphics;
+using StardewValley;
 
 namespace StarControl.Menus;
 
@@ -431,19 +433,26 @@ internal class QuickSlotRenderer(GraphicsDevice graphicsDevice, ModConfig config
         return uiTexture;
     }
 
-    private Sprite? GetSlotSprite(IItemLookup itemLookup)
+    private Sprite? GetSlotSprite(IItemLookup itemLookup, ICollection<Item> inventoryItems)
     {
         if (string.IsNullOrWhiteSpace(itemLookup.Id))
-        {
             return null;
-        }
+
         return itemLookup.IdType switch
         {
-            ItemIdType.GameItem => Sprite.ForItemId(itemLookup.Id),
+            ItemIdType.GameItem => QuickSlotResolver.ResolveInventoryItem(
+                itemLookup.Id,
+                inventoryItems
+            )
+                is Item item
+                ? Sprite.FromItem(item) // handles Item Bags via drawInMenu fallback
+                : Sprite.ForItemId(itemLookup.Id), // fallback for normal items
+
             ItemIdType.ModItem => GetModItemSprite(itemLookup.Id),
             _ => null,
         };
     }
+
 
     private static Color LumaGray(Color color, float lightness)
     {
@@ -492,7 +501,7 @@ internal class QuickSlotRenderer(GraphicsDevice graphicsDevice, ModConfig config
                     LogLevel.Info
                 );
             }
-            sprite ??= GetSlotSprite(slotConfig);
+            sprite ??= GetSlotSprite(slotConfig, Game1.player.Items);
             if (sprite is not null)
             {
                 slotSprites.Add(button, sprite);
