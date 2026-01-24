@@ -1,4 +1,4 @@
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StarControl.Config;
 using StarControl.Data;
@@ -51,8 +51,6 @@ internal class QuickSlotRenderer(GraphicsDevice graphicsDevice, ModConfig config
         (SLOT_DISTANCE + SLOT_SIZE / 2 + MARGIN_OUTER) * 0.7f
     );
 
-    private static readonly Color OuterBackgroundColor = new(16, 16, 16, 210);
-
     private readonly Dictionary<SButton, ButtonFlash> flashes = [];
     private readonly HashSet<SButton> enabledSlots = [];
     private readonly Dictionary<SButton, Sprite> slotSprites = [];
@@ -101,7 +99,11 @@ internal class QuickSlotRenderer(GraphicsDevice graphicsDevice, ModConfig config
                 leftOrigin.AddX(Scale(SLOT_DISTANCE * MENU_SCALE)),
                 Scale(BACKGROUND_RADIUS)
             );
-            b.Draw(outerBackground, leftBackgroundRect, OuterBackgroundColor * BackgroundOpacity);
+            b.Draw(
+                outerBackground,
+                leftBackgroundRect,
+                (Color)config.Style.InnerBackgroundColor * BackgroundOpacity
+            );
             DrawSlot(b, leftOrigin, SButton.DPadLeft, PromptPosition.Left);
             DrawSlot(
                 b,
@@ -160,7 +162,11 @@ internal class QuickSlotRenderer(GraphicsDevice graphicsDevice, ModConfig config
                 rightOrigin.AddX(-Scale(SLOT_DISTANCE * MENU_SCALE)),
                 Scale(BACKGROUND_RADIUS)
             );
-            b.Draw(outerBackground, rightBackgroundRect, OuterBackgroundColor * BackgroundOpacity);
+            b.Draw(
+                outerBackground,
+                rightBackgroundRect,
+                (Color)config.Style.InnerBackgroundColor * BackgroundOpacity
+            );
             DrawSlot(b, rightOrigin, SButton.ControllerB, PromptPosition.Right);
             DrawSlot(
                 b,
@@ -442,10 +448,11 @@ internal class QuickSlotRenderer(GraphicsDevice graphicsDevice, ModConfig config
         {
             ItemIdType.GameItem => QuickSlotResolver.ResolveInventoryItem(
                 itemLookup.Id,
+                itemLookup.SubId,
                 inventoryItems
             )
                 is Item item
-                ? Sprite.FromItem(item) // handles Item Bags via drawInMenu fallback
+                ? Sprite.FromItem(item) // ✅ handles Item Bags via drawInMenu fallback
                 : Sprite.ForItemId(itemLookup.Id), // fallback for normal items
 
             ItemIdType.ModItem => GetModItemSprite(itemLookup.Id),

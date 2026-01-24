@@ -6,6 +6,18 @@ namespace StarControl.Menus;
 
 internal class QuickSlotResolver(Farmer player, ModMenu modMenu)
 {
+    public static Item? ResolveInventoryItem(string id, string? subId, ICollection<Item> items)
+    {
+        if (string.IsNullOrEmpty(subId))
+            return ResolveInventoryItem(id, items);
+
+        return items.FirstOrDefault(i =>
+            i is not null
+            && i.QualifiedItemId == id
+            && Compat.ItemBagsIdentity.TryGetBagTypeId(i) == subId
+        );
+    }
+
     public static Item? ResolveInventoryItem(string id, ICollection<Item> items)
     {
         // Allow exact inventory matches even if the item is not registered in ItemRegistry (e.g. Item Bags)
@@ -124,6 +136,21 @@ internal class QuickSlotResolver(Farmer player, ModMenu modMenu)
         return idType switch
         {
             ItemIdType.GameItem => ResolveInventoryItem(id, player.Items) is { } item
+                ? new InventoryMenuItem(item)
+                : null,
+            ItemIdType.ModItem => modMenu.GetItem(id),
+            _ => null,
+        };
+    }
+
+    public IRadialMenuItem? ResolveItem(string id, string? subId, ItemIdType idType)
+    {
+        if (string.IsNullOrEmpty(id))
+            return null;
+
+        return idType switch
+        {
+            ItemIdType.GameItem => ResolveInventoryItem(id, subId, player.Items) is { } item
                 ? new InventoryMenuItem(item)
                 : null,
             ItemIdType.ModItem => modMenu.GetItem(id),

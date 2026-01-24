@@ -238,7 +238,7 @@ internal class RemappingController(
                 LogCategory.QuickSlots,
                 $"Item data for remapping slot {button}: ID = {slot.IdType}:{slot.Id}"
             );
-            var slottedItem = resolver.ResolveItem(slot.Id, slot.IdType);
+            var slottedItem = resolver.ResolveItem(slot.Id, slot.SubId, slot.IdType);
             if (slottedItem is not null)
             {
                 Logger.Log(
