@@ -422,13 +422,17 @@ internal partial class RemappableItemViewModel
 
     public static RemappableItemViewModel FromInventoryItem(Item item)
     {
-        var itemData = ItemRegistry.GetData(item.QualifiedItemId);
+        ArgumentNullException.ThrowIfNull(item);
+
+        var qualifiedId = item.QualifiedItemId; // can be null/empty for some mod items
+        var sprite = Sprite.FromItem(item);
+
         return new()
         {
-            Id = item.QualifiedItemId,
+            Id = qualifiedId ?? item.Name ?? item.GetType().FullName ?? "unknown",
             IdType = ItemIdType.GameItem,
             Enabled = true,
-            Sprite = new(itemData.GetTexture(), itemData.GetSourceRect()),
+            Sprite = sprite,
             Quality = item.Quality,
             Count = item.Stack,
             Tooltip = new(item.getDescription(), item.DisplayName, item),
