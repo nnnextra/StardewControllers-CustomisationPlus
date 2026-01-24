@@ -29,4 +29,6 @@ public class RemappingSlot : IItemLookup
     /// Menu action, depending on the <see cref="IdType"/>.
     /// </summary>
     public string Id { get; set; } = "";
+
+    public string? SubId { get; set; }
 }
