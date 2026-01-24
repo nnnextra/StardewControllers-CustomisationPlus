@@ -11,6 +11,8 @@ public interface IItemLookup
     /// </summary>
     string Id { get; }
 
+    string? SubId { get; }
+
     /// <summary>
     /// The type of ID that the <see cref="Id"/> refers to.
     /// </summary>
