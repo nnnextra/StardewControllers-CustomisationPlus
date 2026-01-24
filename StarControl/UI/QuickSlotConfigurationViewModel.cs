@@ -1,6 +1,8 @@
 using System.ComponentModel;
+using System.Linq;
 using PropertyChanged.SourceGenerator;
 using StarControl.Graphics;
+using StardewValley;
 using StardewValley.ItemTypeDefinitions;
 
 namespace StarControl.UI;
@@ -50,27 +52,65 @@ internal partial class QuickSlotConfigurationViewModel
 
     private Sprite? GetIcon()
     {
-        return ItemData is not null
-            ? new(ItemData.GetTexture(), ItemData.GetSourceRect())
-            : ModAction?.Icon;
+        if (ItemData is not null)
+        {
+            // Weird-item-proofing: Item Bags and similar mods don't register ItemRegistry data.
+            // If this is an error item, try to find the real inventory item and render it via drawInMenu.
+            if (ItemData.IsErrorItem)
+            {
+                var invItem = Game1.player?.Items?.FirstOrDefault(i =>
+                    i is not null && i.QualifiedItemId == ItemData.QualifiedItemId
+                );
+
+                if (invItem is not null)
+                {
+                    return Sprite.FromItem(invItem);
+                }
+            }
+
+            // Normal path for registered items
+            return new(ItemData.GetTexture(), ItemData.GetSourceRect());
+        }
+
+        return ModAction?.Icon;
     }
 
     private TooltipData GetTooltip()
     {
         if (ItemData is not null)
         {
+            // Weird-item-proofing: if ItemData is an error item, use the real inventory item instead.
+            if (ItemData.IsErrorItem)
+            {
+                var invItem = Game1.player?.Items?.FirstOrDefault(i =>
+                    i is not null && i.QualifiedItemId == ItemData.QualifiedItemId
+                );
+
+                if (invItem is not null)
+                {
+                    return new(
+                        Title: invItem.DisplayName,
+                        Text: invItem.getDescription(),
+                        Item: invItem
+                    );
+                }
+            }
+
+            // Normal path for registered items
             return new(
                 Title: ItemData.DisplayName,
                 Text: ItemData.Description,
                 Item: ItemRegistry.Create(ItemData.QualifiedItemId)
             );
         }
+
         if (ModAction is not null)
         {
             return !string.IsNullOrEmpty(ModAction.Description)
                 ? new(Title: ModAction.Name, Text: ModAction.Description)
                 : new(ModAction.Name);
         }
+
         return new(I18n.Config_QuickActions_EmptySlot_Title());
     }
 
