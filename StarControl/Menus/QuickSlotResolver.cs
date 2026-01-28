@@ -1,4 +1,9 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using StardewValley;
 using StardewValley.ItemTypeDefinitions;
 using StardewValley.Tools;
 
@@ -127,6 +132,160 @@ internal class QuickSlotResolver(Farmer player, ModMenu modMenu)
             || data.QualifiedItemId.Contains("Scythe", StringComparison.OrdinalIgnoreCase);
     }
 
+    private static Type? ItemBagType;
+    private static PropertyInfo? ItemBagContentsProp;
+
+    private static Type? OmniBagType;
+    private static PropertyInfo? OmniNestedBagsProp;
+
+    private static Type? BundleBagType;
+
+    private static bool TryInitItemBagsReflection()
+    {
+        if (ItemBagType is not null && ItemBagContentsProp is not null && BundleBagType is not null)
+            return true;
+
+        // Find ItemBags.Bags.ItemBag
+        ItemBagType ??= AppDomain
+            .CurrentDomain.GetAssemblies()
+            .Select(a => a.GetType("ItemBags.Bags.ItemBag", throwOnError: false))
+            .FirstOrDefault(t => t is not null);
+
+        if (ItemBagType is null)
+            return false;
+
+        // public List<Object> Contents { get; set; }
+        ItemBagContentsProp ??= ItemBagType.GetProperty(
+            "Contents",
+            BindingFlags.Public | BindingFlags.Instance
+        );
+        if (ItemBagContentsProp is null)
+            return false;
+
+        // Find BundleBag type so we can EXCLUDE traversing into its contents
+        BundleBagType ??= AppDomain
+            .CurrentDomain.GetAssemblies()
+            .Select(a => a.GetType("ItemBags.Bags.BundleBag", throwOnError: false))
+            .FirstOrDefault(t => t is not null);
+
+        if (BundleBagType is null)
+            return false;
+
+        // Omni bag support (nested bags)
+        OmniBagType ??= AppDomain
+            .CurrentDomain.GetAssemblies()
+            .Select(a => a.GetType("ItemBags.Bags.OmniBag", throwOnError: false))
+            .FirstOrDefault(t => t is not null);
+
+        if (OmniBagType is not null)
+            OmniNestedBagsProp ??= OmniBagType.GetProperty(
+                "NestedBags",
+                BindingFlags.Public | BindingFlags.Instance
+            );
+
+        return true;
+    }
+
+    internal static bool IsItemBag(Item item) =>
+        ItemBagType is not null && ItemBagType.IsInstanceOfType(item);
+
+    private static bool IsBundleBag(Item item) =>
+        BundleBagType is not null && BundleBagType.IsInstanceOfType(item);
+
+    private static IEnumerable<Item> EnumerateBagContents(Item bag)
+    {
+        // BundleBag is explicitly excluded
+        if (IsBundleBag(bag))
+            yield break;
+
+        if (ItemBagContentsProp?.GetValue(bag) is not IList list || list.Count == 0)
+            yield break;
+
+        foreach (var obj in list)
+            if (obj is Item inner)
+                yield return inner;
+    }
+
+    private static IEnumerable<Item> EnumerateOmniNestedBags(Item bag)
+    {
+        if (OmniBagType is null || OmniNestedBagsProp is null || !OmniBagType.IsInstanceOfType(bag))
+            yield break;
+
+        if (OmniNestedBagsProp.GetValue(bag) is not IList list || list.Count == 0)
+            yield break;
+
+        foreach (var obj in list)
+            if (obj is Item innerBag)
+                yield return innerBag;
+    }
+
+    /// <summary>
+    /// Returns an "effective inventory" which includes:
+    /// - the player's inventory
+    /// - contents of any ItemBags bags in the player's inventory (EXCEPT BundleBag contents)
+    /// - nested bags inside OmniBags (and then their contents too)
+    /// </summary>
+    public static ICollection<Item> GetExpandedPlayerItems(Farmer who)
+    {
+        var baseItems = who.Items;
+
+        if (!TryInitItemBagsReflection())
+            return baseItems;
+
+        var expanded = new List<Item>(baseItems.Count + 16);
+
+        // BFS over bags we discover (supports OmniBag nesting)
+        var seen = new HashSet<Item>();
+        var bagQueue = new Queue<Item>();
+
+        // 1) Start with player inventory
+        foreach (var it in baseItems)
+        {
+            if (it is null)
+                continue;
+            expanded.Add(it);
+
+            if (IsItemBag(it))
+            {
+                if (seen.Add(it))
+                    bagQueue.Enqueue(it);
+            }
+        }
+
+        // 2) Expand bags: add nested bags (omni) + contents (except bundle)
+        int depth = 0;
+        while (bagQueue.Count > 0 && depth < 6)
+        {
+            int layer = bagQueue.Count;
+            for (int i = 0; i < layer; i++)
+            {
+                var bag = bagQueue.Dequeue();
+
+                // Omni nested bags
+                foreach (var nestedBag in EnumerateOmniNestedBags(bag))
+                {
+                    expanded.Add(nestedBag);
+                    if (IsItemBag(nestedBag) && seen.Add(nestedBag))
+                        bagQueue.Enqueue(nestedBag);
+                }
+
+                // Bag contents (except BundleBag)
+                foreach (var innerItem in EnumerateBagContents(bag))
+                {
+                    expanded.Add(innerItem);
+
+                    // If someone manages to store a bag as an Item (or modded bag item), expand it too.
+                    if (IsItemBag(innerItem) && seen.Add(innerItem))
+                        bagQueue.Enqueue(innerItem);
+                }
+            }
+
+            depth++;
+        }
+
+        return expanded;
+    }
+
     public IRadialMenuItem? ResolveItem(string id, ItemIdType idType)
     {
         if (string.IsNullOrEmpty(id))
@@ -135,7 +294,8 @@ internal class QuickSlotResolver(Farmer player, ModMenu modMenu)
         }
         return idType switch
         {
-            ItemIdType.GameItem => ResolveInventoryItem(id, player.Items) is { } item
+            ItemIdType.GameItem => ResolveInventoryItem(id, GetExpandedPlayerItems(player))
+                is { } item
                 ? new InventoryMenuItem(item)
                 : null,
             ItemIdType.ModItem => modMenu.GetItem(id),
@@ -150,7 +310,8 @@ internal class QuickSlotResolver(Farmer player, ModMenu modMenu)
 
         return idType switch
         {
-            ItemIdType.GameItem => ResolveInventoryItem(id, subId, player.Items) is { } item
+            ItemIdType.GameItem => ResolveInventoryItem(id, subId, GetExpandedPlayerItems(player))
+                is { } item
                 ? new InventoryMenuItem(item)
                 : null,
             ItemIdType.ModItem => modMenu.GetItem(id),
