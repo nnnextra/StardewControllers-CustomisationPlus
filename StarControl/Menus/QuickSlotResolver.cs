@@ -17,9 +17,7 @@ internal class QuickSlotResolver(Farmer player, ModMenu modMenu)
             return ResolveInventoryItem(id, items);
 
         return items.FirstOrDefault(i =>
-            i is not null
-            && i.QualifiedItemId == id
-            && Compat.ItemBagsIdentity.TryGetBagTypeId(i) == subId
+            i is not null && i.QualifiedItemId == id && ItemBagsIdentity.TryGetBagTypeId(i) == subId
         );
     }
 
