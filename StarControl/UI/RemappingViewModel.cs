@@ -37,8 +37,7 @@ internal partial class RemappingViewModel(
             new()
             {
                 Name = I18n.Enum_QuickSlotItemSource_Inventory_Name(),
-                Items = who
-                    .Items.Where(item => item is not null)
+                Items = GetInventoryAndNestedBags(who)
                     .Select(RemappableItemViewModel.FromInventoryItem)
                     .ToList(),
             },
@@ -140,7 +139,10 @@ internal partial class RemappingViewModel(
                             who.Items
                         )
                             is Item invItem
-                            ? RemappableItemViewModel.FromInventoryItem(invItem, who.Items)
+                            ? RemappableItemViewModel.FromInventoryItem(
+                                invItem,
+                                QuickSlotResolver.GetExpandedPlayerItems(who)
+                            )
                             : null
                     ),
                 ItemIdType.ModItem => ItemGroups[1]
@@ -377,6 +379,35 @@ internal partial class RemappingViewModel(
             }
         }
         return null;
+    }
+
+    private static IEnumerable<Item> GetInventoryAndNestedBags(Farmer who)
+    {
+        var result = new List<Item>(who.Items.Count + 8);
+        var seen = new HashSet<Item>();
+
+        foreach (var it in who.Items)
+        {
+            if (it is null)
+                continue;
+
+            result.Add(it);
+            seen.Add(it);
+        }
+
+        foreach (var it in QuickSlotResolver.GetExpandedPlayerItems(who))
+        {
+            if (it is null)
+                continue;
+
+            if (!QuickSlotResolver.IsItemBag(it))
+                continue;
+
+            if (seen.Add(it))
+                result.Add(it);
+        }
+
+        return result;
     }
 }
 

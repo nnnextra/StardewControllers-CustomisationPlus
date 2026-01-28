@@ -100,7 +100,7 @@ internal class QuickSlotPickerItemViewModel(
             return new(
                 slot =>
                 {
-                    slot.ItemData = data.GetBaseItem();
+                    slot.ItemData = data;
                     slot.ItemSubId = Compat.ItemBagsIdentity.TryGetBagTypeId(item);
                 },
                 sprite.Texture,

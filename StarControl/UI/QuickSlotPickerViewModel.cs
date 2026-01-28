@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using PropertyChanged.SourceGenerator;
+using StarControl.Menus;
 using StardewValley.ItemTypeDefinitions;
 
 namespace StarControl.UI;
@@ -28,10 +29,11 @@ internal partial class QuickSlotPickerViewModel
     public bool HasMoreModItems =>
         ModMenuPageIndex < 0 && ModMenuPages.Sum(page => page.Items.Count) > MAX_RESULTS;
     public IEnumerable<QuickSlotPickerItemViewModel> InventoryItems =>
-        Game1
-            .player.Items.Where(item => item is not null)
-            .Select(QuickSlotPickerItemViewModel.ForItem)
-            .ToArray();
+        Game1.player is null
+            ? Array.Empty<QuickSlotPickerItemViewModel>()
+            : GetInventoryAndNestedBags(Game1.player)
+                .Select(QuickSlotPickerItemViewModel.ForItem)
+                .ToArray();
     public EnumSegmentsViewModel<QuickSlotItemSource> ItemSource { get; } = new();
     public IEnumerable<QuickSlotPickerItemViewModel> ModMenuItems =>
         (
@@ -183,5 +185,36 @@ internal partial class QuickSlotPickerViewModel
             },
             cancellationToken
         );
+    }
+
+    private static IEnumerable<Item> GetInventoryAndNestedBags(Farmer who)
+    {
+        // Base inventory items (tools, objects, the OmniBag item itself, etc.)
+        var result = new List<Item>(who.Items.Count + 8);
+        var seen = new HashSet<Item>();
+
+        foreach (var it in who.Items)
+        {
+            if (it is null)
+                continue;
+
+            result.Add(it);
+            seen.Add(it);
+        }
+
+        // Add nested bags from OmniBags, but DO NOT add bag contents
+        foreach (var it in QuickSlotResolver.GetExpandedPlayerItems(who))
+        {
+            if (it is null)
+                continue;
+
+            if (!QuickSlotResolver.IsItemBag(it))
+                continue;
+
+            if (seen.Add(it))
+                result.Add(it);
+        }
+
+        return result;
     }
 }
