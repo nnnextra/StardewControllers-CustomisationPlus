@@ -1,7 +1,9 @@
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StarControl.Config;
+using StarControl.Data;
 using StarControl.Graphics;
+using StardewValley;
 
 namespace StarControl.Menus;
 
@@ -48,8 +50,6 @@ internal class QuickSlotRenderer(GraphicsDevice graphicsDevice, ModConfig config
     private const int BACKGROUND_RADIUS = (int)(
         (SLOT_DISTANCE + SLOT_SIZE / 2 + MARGIN_OUTER) * 0.7f
     );
-
-    private static readonly Color OuterBackgroundColor = new(16, 16, 16, 210);
 
     private readonly Dictionary<SButton, ButtonFlash> flashes = [];
     private readonly HashSet<SButton> enabledSlots = [];
@@ -99,7 +99,11 @@ internal class QuickSlotRenderer(GraphicsDevice graphicsDevice, ModConfig config
                 leftOrigin.AddX(Scale(SLOT_DISTANCE * MENU_SCALE)),
                 Scale(BACKGROUND_RADIUS)
             );
-            b.Draw(outerBackground, leftBackgroundRect, OuterBackgroundColor * BackgroundOpacity);
+            b.Draw(
+                outerBackground,
+                leftBackgroundRect,
+                (Color)config.Style.InnerBackgroundColor * BackgroundOpacity
+            );
             DrawSlot(b, leftOrigin, SButton.DPadLeft, PromptPosition.Left);
             DrawSlot(
                 b,
@@ -158,7 +162,11 @@ internal class QuickSlotRenderer(GraphicsDevice graphicsDevice, ModConfig config
                 rightOrigin.AddX(-Scale(SLOT_DISTANCE * MENU_SCALE)),
                 Scale(BACKGROUND_RADIUS)
             );
-            b.Draw(outerBackground, rightBackgroundRect, OuterBackgroundColor * BackgroundOpacity);
+            b.Draw(
+                outerBackground,
+                rightBackgroundRect,
+                (Color)config.Style.InnerBackgroundColor * BackgroundOpacity
+            );
             DrawSlot(b, rightOrigin, SButton.ControllerB, PromptPosition.Right);
             DrawSlot(
                 b,
@@ -431,15 +439,26 @@ internal class QuickSlotRenderer(GraphicsDevice graphicsDevice, ModConfig config
         return uiTexture;
     }
 
-    private Sprite? GetSlotSprite(IItemLookup itemLookup)
+    private Sprite? GetSlotSprite(IItemLookup itemLookup, ICollection<Item> inventoryItems)
     {
         if (string.IsNullOrWhiteSpace(itemLookup.Id))
-        {
             return null;
-        }
+
         return itemLookup.IdType switch
         {
-            ItemIdType.GameItem => Sprite.ForItemId(itemLookup.Id),
+            ItemIdType.GameItem => QuickSlotResolver.ResolveInventoryItem(
+                itemLookup.Id,
+                itemLookup.SubId,
+                inventoryItems
+            )
+                is Item item
+                ? Sprite.FromItem(item) // ✅ handles Item Bags via drawInMenu fallback
+                : (
+                    ItemRegistry.GetData(itemLookup.Id) is not null
+                        ? Sprite.ForItemId(itemLookup.Id) // only for registered items
+                        : null
+                ), // unregistered (ItemBags): don't force error icon
+
             ItemIdType.ModItem => GetModItemSprite(itemLookup.Id),
             _ => null,
         };
@@ -455,7 +474,7 @@ internal class QuickSlotRenderer(GraphicsDevice graphicsDevice, ModConfig config
     {
         Logger.Log(LogCategory.QuickSlots, "Starting refresh of quick slot renderer data.");
         enabledSlots.Clear();
-        slotSprites.Clear();
+        // Keep slotSprites so we can show a "last known" icon when a slot item is temporarily unavailable.
         foreach (var (button, slotConfig) in Slots)
         {
             Logger.Log(LogCategory.QuickSlots, $"Checking slot for {button}...");
@@ -492,10 +511,23 @@ internal class QuickSlotRenderer(GraphicsDevice graphicsDevice, ModConfig config
                     LogLevel.Info
                 );
             }
-            sprite ??= GetSlotSprite(slotConfig);
+            sprite ??= GetSlotSprite(
+                slotConfig,
+                QuickSlotResolver.GetExpandedPlayerItems(Game1.player)
+            );
             if (sprite is not null)
             {
-                slotSprites.Add(button, sprite);
+                slotSprites[button] = sprite; // update/insert
+            }
+            else
+            {
+                // If we had a previous sprite for this slot, keep it so the icon stays visible (greyed out).
+                // If we have none, fall back to a generic item-id sprite so something renders.
+                // (like Item Bags), Sprite.ForItemId will show Error_Invalid, which is worse UX.
+                if (!slotSprites.ContainsKey(button) && !string.IsNullOrWhiteSpace(slotConfig.Id))
+                {
+                    slotSprites[button] = Sprite.ForItemId("Error_Invalid");
+                }
             }
         }
         isDirty = false;

@@ -1,5 +1,6 @@
 using Microsoft.Xna.Framework.Graphics;
 using StarControl.Graphics;
+using StardewValley;
 using StardewValley.ItemTypeDefinitions;
 using StardewValley.Objects;
 
@@ -69,18 +70,46 @@ internal class QuickSlotPickerItemViewModel(
     /// <param name="item">The item to display.</param>
     public static QuickSlotPickerItemViewModel ForItem(Item item)
     {
+        // Keep SmokedFish behavior exactly as before (special tint/overlay logic)
         var data = ItemRegistry.GetDataOrErrorItem(item.QualifiedItemId);
         if (item is SObject obj && obj.preserve.Value == SObject.PreserveType.SmokedFish)
         {
             var fishData = ItemRegistry.GetDataOrErrorItem(obj.GetPreservedItemId());
             return new(
-                slot => slot.ItemData = data,
+                slot =>
+                {
+                    slot.ItemData = data;
+                    slot.ItemSubId = Compat.ItemBagsIdentity.TryGetBagTypeId(item);
+                },
                 fishData.GetTexture(),
                 fishData.GetSourceRect(),
                 fishData.GetSourceRect(),
                 SmokedFishTintColor
             );
         }
+
+        // Tooltip is shared by both paths
+        TooltipData tooltip = !string.IsNullOrEmpty(item.getDescription())
+            ? new(Title: item.DisplayName, Text: item.getDescription(), Item: item)
+            : new(Text: item.getDescription(), Item: item);
+
+        // If the registry data is an error item AND the item isn't vanilla, render via drawInMenu.
+        if (data.IsErrorItem && item.GetType().Assembly != typeof(SObject).Assembly)
+        {
+            var sprite = Sprite.FromItem(item);
+            return new(
+                slot =>
+                {
+                    slot.ItemData = data;
+                    slot.ItemSubId = Compat.ItemBagsIdentity.TryGetBagTypeId(item);
+                },
+                sprite.Texture,
+                sprite.SourceRect,
+                tooltip: tooltip
+            );
+        }
+
+        // Normal (registered) items keep tint/overlay behavior
         Color? tintColor = null;
         Rectangle? tintRect = null;
         if (item is ColoredObject co)
@@ -91,11 +120,13 @@ internal class QuickSlotPickerItemViewModel(
                 tintRect = data.GetSourceRect(1);
             }
         }
-        TooltipData tooltip = !string.IsNullOrEmpty(item.getDescription())
-            ? new(Title: item.DisplayName, Text: item.getDescription(), Item: item)
-            : new(Text: item.getDescription(), Item: item);
+
         return new(
-            slot => slot.ItemData = data.GetBaseItem(),
+            slot =>
+            {
+                slot.ItemData = data.GetBaseItem();
+                slot.ItemSubId = Compat.ItemBagsIdentity.TryGetBagTypeId(item);
+            },
             data.GetTexture(),
             data.GetSourceRect(),
             tintRect,

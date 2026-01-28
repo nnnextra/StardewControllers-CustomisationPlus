@@ -106,7 +106,7 @@ internal class QuickSlotController(
                     + $"secondary action = {slot.UseSecondaryAction}, "
                     + $"require confirmation = {slot.RequireConfirmation}"
             );
-            var slottedItem = resolver.ResolveItem(slot.Id, slot.IdType);
+            var slottedItem = resolver.ResolveItem(slot.Id, slot.SubId, slot.IdType);
             if (slottedItem is not null)
             {
                 Logger.Log(

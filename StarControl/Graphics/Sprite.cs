@@ -1,6 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using StardewValley;
 
 namespace StarControl.Graphics;
 
@@ -20,6 +22,78 @@ public record Sprite(Texture2D Texture, Rectangle SourceRect)
     {
         var data = ItemRegistry.GetDataOrErrorItem(id);
         return new(data.GetTexture(), data.GetSourceRect());
+    }
+
+    public static Sprite FromItem(Item item)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+
+        // 1) Prefer the official item registry sprite (works for all vanilla + most mod items that register properly)
+        var qualifiedId = item.QualifiedItemId;
+        if (!string.IsNullOrEmpty(qualifiedId))
+        {
+            try
+            {
+                var data = ItemRegistry.GetData(qualifiedId);
+                if (data is not null)
+                {
+                    return new(data.GetTexture(), data.GetSourceRect());
+                }
+            }
+            catch
+            {
+                // swallow and fall back below
+            }
+        }
+
+        // 2) Fallback: render the item into a small texture (works even for "weird" items like Item Bags)
+        var derivedTexture = TryRenderItemToTexture(item);
+        if (derivedTexture is not null)
+        {
+            return new(derivedTexture, derivedTexture.Bounds);
+        }
+
+        // 3) Final fallback
+        return Sprites.Error();
+    }
+
+    private static Texture2D? TryRenderItemToTexture(Item item)
+    {
+        try
+        {
+            var graphicsDevice = Game1.graphics.GraphicsDevice;
+            var spriteBatch = Game1.spriteBatch;
+
+            var previousTargets = graphicsDevice.GetRenderTargets();
+            var renderTarget = new RenderTarget2D(graphicsDevice, 64, 64);
+
+            graphicsDevice.SetRenderTarget(renderTarget);
+            graphicsDevice.Clear(Color.Transparent);
+
+            spriteBatch.Begin(
+                SpriteSortMode.Deferred,
+                BlendState.AlphaBlend,
+                rasterizerState: new() { MultiSampleAntiAlias = false },
+                samplerState: SamplerState.PointClamp
+            );
+
+            try
+            {
+                // drawInMenu is the most compatible "just draw whatever this item is" API
+                item.drawInMenu(spriteBatch, Vector2.Zero, 1f);
+            }
+            finally
+            {
+                spriteBatch.End();
+                graphicsDevice.SetRenderTargets(previousTargets);
+            }
+
+            return renderTarget;
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     /// <summary>

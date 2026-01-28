@@ -72,6 +72,7 @@ internal partial class QuickSlotGroupConfigurationViewModel
         {
             case ItemIdType.GameItem:
                 target.ItemData = ItemRegistry.GetDataOrErrorItem(config.Id);
+                target.ItemSubId = config.SubId;
                 break;
             case ItemIdType.ModItem:
                 target.ModAction = modMenuPages
@@ -112,6 +113,7 @@ internal partial class QuickSlotGroupConfigurationViewModel
             {
                 IdType = target.ItemData is not null ? ItemIdType.GameItem : ItemIdType.ModItem,
                 Id = target.ItemData?.QualifiedItemId ?? target.ModAction?.Id ?? "",
+                SubId = target.ItemData is not null ? target.ItemSubId : null,
                 RequireConfirmation = target.RequireConfirmation,
                 UseSecondaryAction = target.UseSecondaryAction,
             };

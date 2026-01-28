@@ -37,8 +37,7 @@ internal partial class RemappingViewModel(
             new()
             {
                 Name = I18n.Enum_QuickSlotItemSource_Inventory_Name(),
-                Items = who
-                    .Items.Where(item => item is not null)
+                Items = GetInventoryAndNestedBags(who)
                     .Select(RemappableItemViewModel.FromInventoryItem)
                     .ToList(),
             },
@@ -130,10 +129,21 @@ internal partial class RemappingViewModel(
             var item = slotData.IdType switch
             {
                 ItemIdType.GameItem => ItemGroups[0]
-                    .Items.FirstOrDefault(item => item.Id == slotData.Id)
-                    ?? RemappableItemViewModel.FromInventoryItem(
-                        ItemRegistry.Create(slotData.Id),
-                        who.Items
+                    .Items.FirstOrDefault(item =>
+                        item.Id == slotData.Id && item.SubId == slotData.SubId
+                    )
+                    ?? (
+                        QuickSlotResolver.ResolveInventoryItem(
+                            slotData.Id,
+                            slotData.SubId,
+                            who.Items
+                        )
+                            is Item invItem
+                            ? RemappableItemViewModel.FromInventoryItem(
+                                invItem,
+                                QuickSlotResolver.GetExpandedPlayerItems(who)
+                            )
+                            : null
                     ),
                 ItemIdType.ModItem => ItemGroups[1]
                     .Items.FirstOrDefault(item => item.Id == slotData.Id),
@@ -153,7 +163,12 @@ internal partial class RemappingViewModel(
         {
             if (slot.Item is { } item && !string.IsNullOrEmpty(item.Id))
             {
-                data[button] = new() { Id = slot.Item.Id, IdType = slot.Item.IdType };
+                data[button] = new()
+                {
+                    Id = slot.Item.Id,
+                    SubId = slot.Item.SubId,
+                    IdType = slot.Item.IdType,
+                };
             }
         }
         onSave(data);
@@ -365,6 +380,35 @@ internal partial class RemappingViewModel(
         }
         return null;
     }
+
+    private static IEnumerable<Item> GetInventoryAndNestedBags(Farmer who)
+    {
+        var result = new List<Item>(who.Items.Count + 8);
+        var seen = new HashSet<Item>();
+
+        foreach (var it in who.Items)
+        {
+            if (it is null)
+                continue;
+
+            result.Add(it);
+            seen.Add(it);
+        }
+
+        foreach (var it in QuickSlotResolver.GetExpandedPlayerItems(who))
+        {
+            if (it is null)
+                continue;
+
+            if (!QuickSlotResolver.IsItemBag(it))
+                continue;
+
+            if (seen.Add(it))
+                result.Add(it);
+        }
+
+        return result;
+    }
 }
 
 internal partial class RemappingSlotViewModel(SButton button)
@@ -396,6 +440,8 @@ internal partial class RemappableItemViewModel
 {
     public string Id { get; init; } = "";
 
+    public string? SubId { get; init; }
+
     public ItemIdType IdType { get; init; }
     public bool IsCountVisible => Count > 1;
 
@@ -422,13 +468,18 @@ internal partial class RemappableItemViewModel
 
     public static RemappableItemViewModel FromInventoryItem(Item item)
     {
-        var itemData = ItemRegistry.GetData(item.QualifiedItemId);
+        ArgumentNullException.ThrowIfNull(item);
+
+        var qualifiedId = item.QualifiedItemId; // can be null/empty for some mod items
+        var sprite = Sprite.FromItem(item);
+
         return new()
         {
-            Id = item.QualifiedItemId,
+            Id = qualifiedId ?? item.Name ?? item.GetType().FullName ?? "unknown",
             IdType = ItemIdType.GameItem,
+            SubId = Compat.ItemBagsIdentity.TryGetBagTypeId(item),
             Enabled = true,
-            Sprite = new(itemData.GetTexture(), itemData.GetSourceRect()),
+            Sprite = sprite,
             Quality = item.Quality,
             Count = item.Stack,
             Tooltip = new(item.getDescription(), item.DisplayName, item),
@@ -442,7 +493,11 @@ internal partial class RemappableItemViewModel
     {
         var result = FromInventoryItem(item);
         result.Enabled =
-            QuickSlotResolver.ResolveInventoryItem(item.QualifiedItemId, availableItems)
+            QuickSlotResolver.ResolveInventoryItem(
+                item.QualifiedItemId,
+                result.SubId,
+                availableItems
+            )
                 is not null;
         return result;
     }
